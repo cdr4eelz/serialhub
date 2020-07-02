@@ -1,0 +1,28 @@
+{
+    "editor.dragAndDrop": false,
+    "editor.definitionLinkOpensInPeek": true,
+    "editor.mouseWheelZoom": true,
+    "editor.padding.bottom": 4,
+    "editor.formatOnPaste": true,
+    "editor.minimap.enabled": false,
+    "editor.minimap.showSlider": "always",
+    "editor.acceptSuggestionOnEnter": "smart",
+    "editor.snippetSuggestions": "none",
+    "editor.suggest.localityBonus": true,
+    "editor.suggest.shareSuggestSelections": true,
+    "editor.suggestSelection": "recentlyUsedByPrefix",
+    "files.simpleDialog.enable": true,
+    "scm.alwaysShowProviders": true,
+    "scm.alwaysShowActions": true,
+    "scm.countBadge": "focused",
+    "scm.defaultViewMode": "tree",
+    "extensions.closeExtensionDetailsOnViewChange": true,
+    "extensions.confirmedUriHandlerExtensionIds": [
+        
+    ],
+    "editor.suggestLineHeight": 20,
+    "git.alwaysShowStagedChangesResourceGroup": true,
+    "yaml.customTags": [
+    
+    ]
+}

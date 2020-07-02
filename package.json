@@ -20,7 +20,7 @@
   "license": "BSD-3-Clause",
   "author": {
     "name": "cdr4eelz",
-    "email": ""
+    "email": "cdr4eelz@example.com"
   },
   "main": "lib/index.js",
   "types": "./lib/index.d.ts",
