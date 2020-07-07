@@ -1,21 +1,15 @@
 
 # serialhub
 
-[![Build Status](https://travis-ci.org//serialhub.svg?branch=master)](https://travis-ci.org//serialhub)
-[![codecov](https://codecov.io/gh//serialhub/branch/master/graph/badge.svg)](https://codecov.io/gh//serialhub)
+[![Build Status](https://travis-ci.org/cdr4eelz/serialhub.svg?branch=master)](https://travis-ci.org/cdr4eelz/serialhub)
+[![codecov](https://codecov.io/gh/cdr4eelz/serialhub/branch/master/graph/badge.svg)](https://codecov.io/gh/cdr4eelz/serialhub)
 
 
-Jupyter Widget for WebSerial
+WebSerial widget for Jupyter Hub and Lab
 
 ## Installation
 
-You can install using `pip`:
-
-```bash
-pip install serialhub
-```
-
-Or if you use jupyterlab:
+If you use jupyterlab:
 
 ```bash
 pip install serialhub

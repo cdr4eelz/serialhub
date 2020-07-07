@@ -61,14 +61,14 @@ cmdclass['jsdeps'] = combine_commands(
 
 setup_args = dict(
     name            = name,
-    description     = 'Jupyter Widget for WebSerial',
+    description     = 'WebSerial widget for Jupyter Hub/Lab',
     version         = version,
     scripts         = glob(pjoin('scripts', '*')),
     cmdclass        = cmdclass,
     packages        = find_packages(),
     author          = 'cdr4eelz',
     author_email    = '',
-    url             = 'https://github.com//serialhub',
+    url             = 'https://github.com/cdr4eelz/serialhub',
     license         = 'BSD',
     platforms       = "Linux, Mac OS X, Windows",
     keywords        = ['Jupyter', 'Widgets', 'IPython'],

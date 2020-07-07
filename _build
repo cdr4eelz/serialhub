@@ -1,0 +1,18 @@
+#!/bin/bash -eux
+  
+cd ~/labtests/serialhub/
+
+jlpm  &&  jlpm build
+pip install -e ".[test, examples]"
+jlpm  &&  jlpm build
+
+py.test
+which firefox && (( "${DISPLAY} )) && npm test
+
+jupyter labextension uninstall -y serialhub
+pip uninstall serialhub
+jupyter labextension install  --minimize=False --debug  @jupyter-widgets/jupyterlab-manager --no-build
+jupyter labextension uninstall -y .
+
+pip install -e ".[test, examples]"
+jupyter lab  build  --dev-build=False --minimize=False --debug

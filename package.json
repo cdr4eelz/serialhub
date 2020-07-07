@@ -1,7 +1,7 @@
 {
   "name": "serialhub",
   "version": "0.0.1",
-  "description": "Jupyter Widget for WebSerial",
+  "description": "WebSerial widget for Jupyter Hub/Lab",
   "keywords": [
     "jupyter",
     "jupyterlab",
@@ -13,14 +13,14 @@
     "dist/*.js",
     "css/*.css"
   ],
-  "homepage": "https://github.com//serialhub",
+  "homepage": "https://github.com/cdr4eelz/serialhub",
   "bugs": {
-    "url": "https://github.com//serialhub/issues"
+    "url": "https://github.com/cdr4eelz/serialhub/issues"
   },
   "license": "BSD-3-Clause",
   "author": {
     "name": "cdr4eelz",
-    "email": "cdr4eelz@example.com"
+    "email": "1408777+cdr4eelz@users.noreply.github.com"
   },
   "main": "lib/index.js",
   "types": "./lib/index.d.ts",

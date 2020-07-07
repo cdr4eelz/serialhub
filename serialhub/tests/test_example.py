@@ -6,9 +6,9 @@
 
 import pytest
 
-from ..example import ExampleWidget
+from ..example import SerialHubWidget
 
 
 def test_example_creation_blank():
-    w = ExampleWidget()
-    assert w.value == 'Hello World'
+    w = SerialHubWidget()
+    assert w.value == 'serial-hub'
