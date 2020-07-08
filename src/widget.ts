@@ -26,7 +26,7 @@ class SerialHubModel extends DOMWidgetModel {
       _view_name: SerialHubModel.view_name,
       _view_module: SerialHubModel.view_module,
       _view_module_version: SerialHubModel.view_module_version,
-      value: 'serial-hub',
+      value: 'serial-on-your-hub',
       xtra: 'font-weight: bolder',
     };
   }
@@ -35,9 +35,9 @@ class SerialHubModel extends DOMWidgetModel {
 
   
   static serializers: ISerializers = {
-      ...DOMWidgetModel.serializers,
-      // Add any extra serializers here
-    }
+    ...DOMWidgetModel.serializers,
+    // Add any extra serializers here
+  }
 
   static model_name = 'SerialHubModel';
   static model_module = MODULE_NAME;
@@ -51,7 +51,7 @@ class SerialHubModel extends DOMWidgetModel {
 export
 class SerialHubView extends DOMWidgetView {
   render() {
-    this.el.classList.add('serialhub-widget');
+    this.el.classList.add('xx-serialhub-widget');
 
     this.value_changed();  this.xtra_changed();
     this.model.on('change:value', this.value_changed, this);

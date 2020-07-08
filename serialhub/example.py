@@ -23,5 +23,5 @@ class SerialHubWidget(DOMWidget):
     _view_module = Unicode(module_name).tag(sync=True)
     _view_module_version = Unicode(module_version).tag(sync=True)
 
-    value = Unicode('serial-hub').tag(sync=True)
+    value = Unicode('serial-on-your-hub').tag(sync=True)
     xtra = Unicode('font-weight: bold').tag(sync=True)

@@ -21,6 +21,7 @@ import {
 
 const EXTENSION_ID = 'serialhub:plugin';
 
+
 /**
  * The SerialHub plugin.
  */

@@ -11,4 +11,4 @@ from ..example import SerialHubWidget
 
 def test_example_creation_blank():
     w = SerialHubWidget()
-    assert w.value == 'serial-hub'
+    assert w.value == 'serial-on-your-hub'
