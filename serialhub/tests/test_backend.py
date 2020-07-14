@@ -6,9 +6,9 @@
 
 import pytest
 
-from ..example import SerialHubWidget
+from ..backend import SerialHubWidget
 
 
-def test_example_creation_blank():
+def test_backend_creation_blank():
     w = SerialHubWidget()
     assert w.value == 'serial-on-your-hub'

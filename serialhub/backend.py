@@ -5,16 +5,23 @@
 # Distributed under the terms of the Modified BSD License.
 
 """
-TODO: Add module docstring
+SerialHub backend widget & support classes
 """
 
 from ipywidgets import DOMWidget
-from traitlets import Unicode
+from traitlets import Unicode, Int
 from ._frontend import module_name, module_version
 
 
 class SerialHubWidget(DOMWidget):
-    """TODO: Add docstring here
+    """
+    SerialHubWidget class inherits ipywidgets.DOMWidget
+      Model: SerialHubModel
+      View: SerialHubView
+    
+    Synchronized attributes:
+      value: Unicode string
+      xtra: Unicode string
     """
     _model_name = Unicode('SerialHubModel').tag(sync=True)
     _model_module = Unicode(module_name).tag(sync=True)

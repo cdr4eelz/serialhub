@@ -14,7 +14,11 @@ import '../css/widget.css'
 
 
 import * as utils from '@jupyter-widgets/base';
+import {
+    UUID
+} from '@lumino/coreutils';
 
+import { SerialHubPort } from './webseriallink';
 
 export
 class SerialHubModel extends DOMWidgetModel {
@@ -31,7 +35,7 @@ class SerialHubModel extends DOMWidgetModel {
     };
   }
   
-  static myjunk: string = utils.uuid();
+  static mytempid: string = utils.uuid();
 
   
   static serializers: ISerializers = {
@@ -51,9 +55,12 @@ class SerialHubModel extends DOMWidgetModel {
 export
 class SerialHubView extends DOMWidgetView {
   render() {
+    this.el.id = UUID.uuid4();
     this.el.classList.add('xx-serialhub-widget');
-
-    this.value_changed();  this.xtra_changed();
+    this.el.onclick = (ev:MouseEvent) => this.clickme(ev);
+    
+    this.value_changed();
+    this.xtra_changed();
     this.model.on('change:value', this.value_changed, this);
     this.model.on('change:xtra', this.xtra_changed, this);
   }
@@ -63,5 +70,13 @@ class SerialHubView extends DOMWidgetView {
   }
   xtra_changed() {
     this.el.style = this.model.get('xtra');
+  }
+  
+  clickme(this:SerialHubView, ev:MouseEvent) {
+    console.log(this, arguments);
+    console.log(this.model);
+    this.model.set('value','newvalue');
+    this.touch();
+    SerialHubPort.test();
   }
 }

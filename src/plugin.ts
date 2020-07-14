@@ -19,8 +19,15 @@ import {
   MODULE_NAME, MODULE_VERSION
 } from './version';
 
-const EXTENSION_ID = 'serialhub:plugin';
 
+const EXTENSION_ID = 'serialhub_plugin';
+/*
+namespace CommandIDs {
+  export const connect = 'serialhub:connect'
+  export const disconnect = 'serialhub:disconnect'
+  export const test = 'serialhub:test'
+}
+*/
 
 /**
  * The SerialHub plugin.
