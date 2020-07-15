@@ -58,16 +58,20 @@ cmdclass['jsdeps'] = combine_commands(
     ensure_targets(jstargets),
 )
 
+def readfile(fname):
+    return open(pjoin(HERE, fname)).read()
 
 setup_args = dict(
     name            = name,
     description     = 'WebSerial widget for Jupyter Hub/Lab',
+    long_description = readfile('README.md'),
+    long_description_content_type = 'text/markdown',
     version         = version,
     scripts         = glob(pjoin('scripts', '*')),
     cmdclass        = cmdclass,
     packages        = find_packages(),
     author          = 'cdr4eelz',
-    author_email    = '',
+    author_email    = 'cdr4eelz-pypy@yahoo.com',
     url             = 'https://github.com/cdr4eelz/serialhub',
     license         = 'BSD',
     platforms       = "Linux, Mac OS X, Windows",
@@ -83,6 +87,7 @@ setup_args = dict(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Framework :: Jupyter',
+        'Framework :: IPython',
     ],
     include_package_data = True,
     install_requires = [
