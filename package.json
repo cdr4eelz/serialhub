@@ -49,7 +49,8 @@
     "watch:nbextension": "webpack --watch"
   },
   "dependencies": {
-    "minimist": ">=0.2.1 <1",
+    "lodash": ">=4.17.19",
+    "minimist": "^1.2.3",
     "@jupyter-widgets/base": "^1.1.10 || ^2 || ^3"
   },
   "devDependencies": {
