@@ -9,7 +9,7 @@ SerialHub backend widget & support classes
 """
 
 #from __future__ import print_function
-from typing import Sequence, Mapping, Any, ByteString, Optional, Literal, BinaryIO, IO, NoReturn
+from typing import Sequence, Mapping, Any, ByteString, Optional, BinaryIO, IO, NoReturn
 import io, binascii
 
 from ipywidgets import DOMWidget
@@ -60,10 +60,10 @@ class Serial(io.RawIOBase):
     def __init__(self, *args, **kwargs):
         pass
 
-    def readable(self) -> Literal[True]:  return True
-    def writable(self) -> Literal[True]:  return True
-    def isatty(self)   -> Literal[False]: return False
-    def seekable(self) -> Literal[False]: return False
+    def readable(self) -> bool:  return True
+    def writable(self) -> bool:  return True
+    def isatty(self)   -> bool: return False
+    def seekable(self) -> bool: return False
 
     def closed(self) -> bool:
         return True
