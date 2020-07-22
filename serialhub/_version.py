@@ -4,5 +4,5 @@
 # Copyright (c) cdr4eelz.
 # Distributed under the terms of the Modified BSD License.
 
-version_info = (0, 0, 3, 'dev0')
+version_info = (0, 0, 4)
 __version__ = ".".join(map(str, version_info))

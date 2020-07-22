@@ -23,13 +23,15 @@ describe('SerialHub', () => {
     it('should be createable', () => {
       let model = createTestModel(SerialHubModel);
       expect(model).to.be.an(SerialHubModel);
-      expect(model.get('value')).to.be('serial-on-your-hub');
+      expect(model.get('state')).to.be('Initializing...');
+      expect(model.get('value')).to.be('Loading...');
     });
 
     it('should be createable with a value', () => {
-      let state = { value: 'Foo Bar!' }
+      let state = { state: 'Bar Foo!', value: 'Foo Bar!' }
       let model = createTestModel(SerialHubModel, state);
       expect(model).to.be.an(SerialHubModel);
+      expect(model.get('state')).to.be('Bar Foo!');
       expect(model.get('value')).to.be('Foo Bar!');
     });
 

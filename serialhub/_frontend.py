@@ -9,4 +9,4 @@ Information about the frontend package of the widgets.
 """
 
 module_name = "serialhub"
-module_version = "^0.0.3"
+module_version = "^0.0.4"

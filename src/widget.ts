@@ -2,7 +2,7 @@
 // Distributed under the terms of the Modified BSD License.
 
 import {
-  DOMWidgetModel, DOMWidgetView, ISerializers
+  DOMWidgetModel, DOMWidgetView, ISerializers, Dict
 } from '@jupyter-widgets/base';
 
 import {
@@ -30,12 +30,17 @@ class SerialHubModel extends DOMWidgetModel {
       _view_name: SerialHubModel.view_name,
       _view_module: SerialHubModel.view_module,
       _view_module_version: SerialHubModel.view_module_version,
-      value: 'serial-on-your-hub',
-      xtra: 'font-weight: bolder',
+
+      isSupported: false,
+      status: 'Initializing...',
+      value: 'Loading...',
     };
   }
   
-  static mytempid: string = utils.uuid();
+  private static _mytempid: string = utils.uuid();
+  static get mytempid(): string {
+    return SerialHubModel._mytempid;
+  }
 
   
   static serializers: ISerializers = {
@@ -54,29 +59,70 @@ class SerialHubModel extends DOMWidgetModel {
 
 export
 class SerialHubView extends DOMWidgetView {
-  render() {
-    this.el.id = UUID.uuid4();
+  _el_status: HTMLDivElement | null = null;
+  _el_value: HTMLPreElement | null = null;
+
+  render() : this {
+    this.el.id = this.id || UUID.uuid4();
     this.el.classList.add('xx-serialhub-widget');
-    this.el.onclick = (ev:MouseEvent) => this.clickme(ev);
-    
-    this.value_changed();
-    this.xtra_changed();
-    this.model.on('change:value', this.value_changed, this);
-    this.model.on('change:xtra', this.xtra_changed, this);
+
+    /* Create a couple sub-Elements for our custom widget */
+    this._el_status = window.document.createElement("div");
+    this._el_status.classList.add('xx-serialhub-status');
+    this._el_value = window.document.createElement("pre");
+    this._el_value.classList.add('xx-serialhub-value');
+
+    /* Click events wrapped to capture "this" object */
+    this._el_status.onclick = (ev: MouseEvent) => this.click_status(ev);
+    this._el_value.onclick = (ev: MouseEvent) => this.click_value(ev);
+
+    /* Maybe is more appropriate append() function availablie? */
+    this.$el.append(this._el_status, this._el_value);
+
+    this.changed_status();
+    this.changed_value();
+    this.model.on('change:status', this.changed_status, this);
+    this.model.on('change:value', this.changed_value, this);
+
+    this.model.on('msg:custom', this.msg_custom, this);
+
+    this.model.set('isSupported', SerialHubPort.isSupported());
+    this.model.set('status', (SerialHubPort.isSupported()) ? 'Supported' : 'Unsupported');
+    this.touch();
+
+    return this;
   }
 
-  value_changed() {
-    this.el.textContent = this.model.get('value');
+  changed_status() : void {
+    if (!this._el_status) return;
+    this._el_status.textContent = this.model.get('status');
   }
-  xtra_changed() {
-    this.el.style = this.model.get('xtra');
+  changed_value() : void {
+    if (!this._el_value) return;
+    this._el_value.textContent = this.model.get('value');
   }
-  
-  clickme(this:SerialHubView, ev:MouseEvent) {
-    console.log(this, arguments);
-    console.log(this.model);
-    this.model.set('value','newvalue');
-    this.touch();
-    SerialHubPort.test();
+
+  click_status(this:SerialHubView, ev:MouseEvent) {
+    //console.log(this, arguments, this.model);
+    let SHP = SerialHubPort.test( (value: any) => {
+      console.log(value);
+      this.model.send({'type':"binary"}, {}, [value]);
+    });
+    console.log("DONE", SHP);
   }
+
+  click_value(this: SerialHubView, ev: MouseEvent) {
+    if (!this || !this.model) return;
+    this.model.send({'type':"text", 'text':"DATA\n"}, {}, []);
+    (window as any).serPort.writeToStream("6");
+  }
+
+  msg_custom(this: SerialHubView, mData: Dict<any>, mBuffs: DataView[]): void {
+    console.log(this, mData, mBuffs);
+    let msgType = mData['type'];
+    if (msgType == 'text') {
+      (window as any).serPort.writeToStream(mData['text']);
+    }
+  }
+
 }

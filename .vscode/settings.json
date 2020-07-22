@@ -24,5 +24,8 @@
     "git.alwaysShowStagedChangesResourceGroup": true,
     "yaml.customTags": [
     
-    ]
+    ],
+    "python.pythonPath": "/opt/conda/envs/notebook/bin/python",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }

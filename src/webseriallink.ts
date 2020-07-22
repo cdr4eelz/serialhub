@@ -60,29 +60,28 @@ class SerialHubPort {
   port: ISerialPort |null;
   outputStream: WritableStream |null;
   outputDone: Promise<void> |null;
-  inputStream: ReadableStream |null;
-  inputDone: Promise<void> |null;
+  //inputStream: ReadableStream |null;
+  //inputDone: Promise<void> |null;
   reader: ReadableStreamDefaultReader |null;
 
-  static NAV: INavigatorSerial = (window.navigator as INavigatorSerial);
-  
   constructor( oldSP?: SerialHubPort ) {
     if (oldSP) oldSP.disconnect(); //Dispose of prior "port" if passed to us
     this.port = null;
     this.outputStream = null;
     this.outputDone = null;
-    this.inputStream = null;
-    this.inputDone = null;
+    //this.inputStream = null;
+    //this.inputDone = null;
     this.reader = null;
   }
   
-  async connect() {
+  async connect(f: Function) {
+    let NAV: INavigatorSerial = (window.navigator as INavigatorSerial);
+    if (!NAV || !NAV.serial) return;
     if (this.port) {
       await this.disconnect();
     }
-    if (!SerialHubPort.NAV.serial) return;
     const filter = { usbVendorId: 0x2047 }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
-    let rawPort = await SerialHubPort.NAV.serial.requestPort( {filters: [filter]} );
+    let rawPort = await NAV.serial.requestPort( {filters: [filter]} );
     if (!rawPort) return;
     this.port = rawPort;
     await this.port.open({ baudrate: 115200 });
@@ -91,22 +90,23 @@ class SerialHubPort {
     this.outputDone = encoder.readable.pipeTo(this.port.writable);
     this.outputStream = encoder.writable;
 
-    let decoder = new TextDecoderStream();
-    this.inputDone = this.port.readable.pipeTo(decoder.writable);
-    this.inputStream = decoder.readable;
-    this.reader = this.inputStream.getReader();
+//    let decoder = new TextDecoderStream();
+//    this.inputDone = this.port.readable.pipeTo(decoder.writable);
+//    this.inputStream = decoder.readable;
+//    this.reader = this.inputStream.getReader();
+    this.reader = this.port.readable.getReader();
 
     console.log("CONNECT: ", this);
-    this.readLoop();
+    this.readLoop(f);
   }
   
   async disconnect() {
     console.log("CLOSE: ", this);
     if (this.reader) {
       await this.reader.cancel();
-      if (this.inputDone) await this.inputDone.catch(() => {});
       this.reader = null;
-      this.inputDone = null;
+      //if (this.inputDone) await this.inputDone.catch(() => {});
+      //this.inputDone = null;
     }
     if (this.outputStream) {
       await this.outputStream.getWriter().close();
@@ -130,14 +130,13 @@ class SerialHubPort {
     writer.releaseLock();
   }
   
-  async readLoop() {
+  async readLoop(f: Function) {
     while (true) {
       if (!this.reader) break;
       const { value, done } = await this.reader.read();
       if (value) {
         console.log("[readLoop] VALUE", value);
-        //let CC=Backbone.$("#custom-custom")[0];
-        //if (CC) CC.innerText += value;
+        f(value);
       }
       if (done) {
         console.log("[readLoop] DONE", done);
@@ -147,13 +146,24 @@ class SerialHubPort {
     }
   }
   
-  static test() {
+
+  static isSupported(): boolean {
+    let NAV: Navigator = window.navigator;
+    if (NAV === undefined || NAV === null) return false;
+    let SER: any = (NAV as any).serial;
+    if (SER === undefined || SER === null) return false;
+    return true;
+  }
+
+  static test(f: Function): SerialHubPort {
     let W : any = (window as any);
-    W.serPort = new SerialHubPort( W.serPort );
-    W.P1 = W.serPort.connect().then( (val: any) => {
-        console.log(val);
-        W.serPort.writeToStream("1");
-      });
+    let SER = new SerialHubPort( W.serPort );
+    W.serPort = SER;
+    SER.connect(f).then( () : void => {
+      console.log(SER);
+      SER.writeToStream("1");
+    });
+    return SER;
   }
 
 }

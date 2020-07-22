@@ -11,4 +11,5 @@ from ..backend import SerialHubWidget
 
 def test_backend_creation_blank():
     w = SerialHubWidget()
-    assert w.value == 'serial-on-your-hub'
+    assert w.status == 'Checking...'
+    assert w.value == ''
