@@ -43,7 +43,7 @@ class SerialHubWidget(DOMWidget):
         msgType = mData['type'];
         if (msgType == 'binary'):
             for buf in mBufs:
-                self.value += str(binascii.b2a_hex(buf, sep=' '));
+                self.value += str(binascii.b2a_hex(buf));
         elif (msgType == 'text'):
             self.value += mData['text'];
 
