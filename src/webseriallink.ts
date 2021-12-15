@@ -13,11 +13,11 @@ interface IInputSignals {
   dsr: boolean;
 }
 interface ISerialOptions {
-  baudrate?: number; /* >0 */
-  databits?: number; /*ONLY: 7 8 */
+  baudRate?: number; /* >0 */
+  dataBits?: number; /*ONLY: 7 8 */
   parity?: 'none' | 'even' | 'odd';
-  stopbits?: number; /*ONLY: 1 2 */
-  buffersize?: number; /* >0 */
+  stopBits?: number; /*ONLY: 1 2 */
+  bufferSize?: number; /* >0 */
 }
 interface ISerialPortInfo {
   serialNumber?: string;
@@ -84,7 +84,7 @@ class SerialHubPort {
     let rawPort = await NAV.serial.requestPort( {filters: [filter]} );
     if (!rawPort) return;
     this.port = rawPort;
-    await this.port.open({ baudrate: 115200 });
+    await this.port.open({ baudRate: 115200 });
 
     const encoder = new TextEncoderStream();
     this.outputDone = encoder.readable.pipeTo(this.port.writable);

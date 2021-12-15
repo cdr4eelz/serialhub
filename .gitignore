@@ -156,3 +156,7 @@ serialhub/labextension/*.tgz
 serialhub/labextension
 d1/
 d2/
+
+# Backup Files
+*~
+
