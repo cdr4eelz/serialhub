@@ -12,6 +12,7 @@ HERE = Path(__file__).parent.resolve()
 # The name of the project
 name = "serialhub"
 
+nb_path = (HERE / name.replace("-", "_") / "nbextension" / "static")
 lab_path = (HERE / name.replace("-", "_") / "labextension")
 
 # Representative files that should exist after a successful build
@@ -23,6 +24,8 @@ ensured_targets = [
 labext_name = "serialhub"
 
 data_files_spec = [
+    ('share/jupyter/nbextensions/serialhub', nb_path, '*.js*'),
+    ('etc/jupyter/nbconfig/notebook.d', str("."), 'serialhub.json'),
     ("share/jupyter/labextensions/%s" % labext_name, str(lab_path.relative_to(HERE)), "**"),
     ("share/jupyter/labextensions/%s" % labext_name, str("."), "install.json"),
     ("etc/jupyter/jupyter_server_config.d",

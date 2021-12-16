@@ -2698,6 +2698,7 @@
       "resolveJsonModule": true,
       "outDir": "./lib",
       "rootDir": "./src",
+      "sourceMap": true,
       "strict": true,
       "strictNullChecks": true,
       "target": 4,
