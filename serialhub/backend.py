@@ -12,11 +12,11 @@ SerialHub backend widget & support classes
 from typing import Sequence, Mapping, Any, ByteString, Optional, BinaryIO, IO, NoReturn
 import io, binascii
 
-from ipywidgets import DOMWidget
+from ipywidgets import DOMWidget, register
 from traitlets import Unicode, Int, Bool
 from ._frontend import module_name, module_version
 
-
+@register
 class SerialHubWidget(DOMWidget):
     """
     SerialHubWidget class inherits ipywidgets.DOMWidget

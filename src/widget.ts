@@ -10,7 +10,8 @@ import {
 } from './version';
 
 // Import the CSS
-import '../css/widget.css'
+//import '../css/widget.css'
+import '../style/widget.css'
 
 
 import * as utils from '@jupyter-widgets/base';

@@ -25,7 +25,7 @@
     "yaml.customTags": [
     
     ],
-    "python.pythonPath": "/opt/conda/envs/notebook/bin/python",
+    "python.pythonPath": "/opt/conda/bin/python",
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true
 }
