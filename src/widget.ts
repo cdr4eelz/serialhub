@@ -2,27 +2,24 @@
 // Distributed under the terms of the Modified BSD License.
 
 import {
-  DOMWidgetModel, DOMWidgetView, ISerializers, Dict
+  DOMWidgetModel,
+  DOMWidgetView,
+  ISerializers,
+  Dict
 } from '@jupyter-widgets/base';
 
-import {
-  MODULE_NAME, MODULE_VERSION
-} from './version';
+import { MODULE_NAME, MODULE_VERSION } from './version';
 
 // Import the CSS
 //import '../css/widget.css'
-import '../style/widget.css'
-
+import '../style/widget.css';
 
 import * as utils from '@jupyter-widgets/base';
-import {
-    UUID
-} from '@lumino/coreutils';
+import { UUID } from '@lumino/coreutils';
 
 import { SerialHubPort } from './webseriallink';
 
-export
-class SerialHubModel extends DOMWidgetModel {
+export class SerialHubModel extends DOMWidgetModel {
   defaults() {
     return {...super.defaults(),
       _model_name: SerialHubModel.model_name,
@@ -43,11 +40,10 @@ class SerialHubModel extends DOMWidgetModel {
     return SerialHubModel._mytempid;
   }
 
-  
   static serializers: ISerializers = {
-    ...DOMWidgetModel.serializers,
+    ...DOMWidgetModel.serializers
     // Add any extra serializers here
-  }
+  };
 
   static model_name = 'SerialHubModel';
   static model_module = MODULE_NAME;
@@ -57,13 +53,11 @@ class SerialHubModel extends DOMWidgetModel {
   static view_module_version = MODULE_VERSION;
 }
 
-
-export
-class SerialHubView extends DOMWidgetView {
+export class SerialHubView extends DOMWidgetView {
   _el_status: HTMLDivElement | null = null;
   _el_value: HTMLPreElement | null = null;
 
-  render() : this {
+  render(): this {
     this.el.id = this.id || UUID.uuid4();
     this.el.classList.add('xx-serialhub-widget');
 
@@ -88,39 +82,60 @@ class SerialHubView extends DOMWidgetView {
     this.model.on('msg:custom', this.msg_custom, this);
 
     this.model.set('isSupported', SerialHubPort.isSupported());
-    this.model.set('status', (SerialHubPort.isSupported()) ? 'Supported' : 'Unsupported');
+    this.model.set(
+      'status',
+      SerialHubPort.isSupported() ? 'Supported' : 'Unsupported'
+    );
     this.touch();
 
     return this;
   }
 
   changed_status() : void {
-    if (!this._el_status) return;
+    if (!this._el_status) {
+      return;
+    }
     this._el_status.textContent = this.model.get('status');
   }
   changed_value() : void {
-    if (!this._el_value) return;
+    if (!this._el_value) {
+      return;
+    }
     this._el_value.textContent = this.model.get('value');
   }
 
-  click_status(this:SerialHubView, ev:MouseEvent) {
+  click_status_OLD(this: SerialHubView, ev: MouseEvent): void {
     //console.log(this, arguments, this.model);
-    let SHP = SerialHubPort.test( (value: any) => {
+    let SHP = SerialHubPort.test((value: any) => {
       console.log(value);
-      this.model.send({'type':"binary"}, {}, [value]);
+      this.model.send({ type: 'binary' }, {}, [value]);
     });
-    console.log("DONE", SHP);
+    console.log('DONE_OLD', SHP);
   }
 
-  click_value(this: SerialHubView, ev: MouseEvent) {
-    if (!this || !this.model) return;
-    this.model.send({'type':"text", 'text':"DATA\n"}, {}, []);
-    (window as any).serPort.writeToStream("6");
+  click_status(this: SerialHubView, ev: MouseEvent): void {
+    console.log('click_status', this, arguments, this.model);
+    let SHP = SerialHubPort.createHub((theSHP: SerialHubPort) => {
+      console.log('theSHP', theSHP);
+      theSHP.readLoop((value: any) => {
+        console.log('DATA-IN', value);
+        this.model.send({ type: 'binary' }, {}, [value]);
+      });
+    });
+    console.log('DONE5', SHP);
+  }
+
+  click_value(this: SerialHubView, ev: MouseEvent): void {
+    if (!this || !this.model) {
+      return;
+    }
+    this.model.send({ type: 'text', text: 'VALUE6\n' }, {}, []);
+    (window as any).serPort.writeToStream('6');
   }
 
   msg_custom(this: SerialHubView, mData: Dict<any>, mBuffs: DataView[]): void {
     console.log(this, mData, mBuffs);
-    let msgType = mData['type'];
+    const msgType = mData['type'];
     if (msgType == 'text') {
       (window as any).serPort.writeToStream(mData['text']);
     }

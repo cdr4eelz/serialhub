@@ -48,24 +48,24 @@ interface ISerial extends EventTarget {
   onconnect: ((this: ISerial, ev: Event) => any) | null; /* SerialConnectionEvent */
   ondisconnect: ((this: ISerial, ev: Event) => any) | null; /* SerialConnectionEvent */
   getPorts: () => Promise<ISerialPort[]>;
-  requestPort: (options? : IRequestOptions) => Promise<ISerialPort>;
+  requestPort: (options?: IRequestOptions) => Promise<ISerialPort>;
 }
 interface INavigatorSerial extends Navigator {
-    readonly serial?: ISerial;
+  readonly serial?: ISerial;
 }
 
-
-export
-class SerialHubPort {
-  port: ISerialPort |null;
-  outputStream: WritableStream |null;
-  outputDone: Promise<void> |null;
+export class SerialHubPort {
+  port: ISerialPort | null;
+  outputStream: WritableStream | null;
+  outputDone: Promise<void> | null;
   //inputStream: ReadableStream |null;
   //inputDone: Promise<void> |null;
-  reader: ReadableStreamDefaultReader |null;
+  reader: ReadableStreamDefaultReader | null;
 
-  constructor( oldSP?: SerialHubPort ) {
-    if (oldSP) oldSP.disconnect(); //Dispose of prior "port" if passed to us
+  constructor(oldSP?: SerialHubPort) {
+    if (oldSP) {
+      oldSP.disconnect(); //Dispose of prior "port" if passed to us
+    }
     this.port = null;
     this.outputStream = null;
     this.outputDone = null;
@@ -74,15 +74,19 @@ class SerialHubPort {
     this.reader = null;
   }
   
-  async connect(f: Function) {
-    let NAV: INavigatorSerial = (window.navigator as INavigatorSerial);
-    if (!NAV || !NAV.serial) return;
+  async connect() {
+    const NAV: INavigatorSerial = (window.navigator as INavigatorSerial);
+    if (!NAV || !NAV.serial) {
+      return;
+    }
     if (this.port) {
       await this.disconnect();
     }
     const filter = { usbVendorId: 0x2047 }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
-    let rawPort = await NAV.serial.requestPort( {filters: [filter]} );
-    if (!rawPort) return;
+    const rawPort = await NAV.serial.requestPort({ filters: [filter] });
+    if (!rawPort) {
+      return;
+    }
     this.port = rawPort;
     await this.port.open({ baudRate: 115200 });
 
@@ -90,14 +94,14 @@ class SerialHubPort {
     this.outputDone = encoder.readable.pipeTo(this.port.writable);
     this.outputStream = encoder.writable;
 
-//    let decoder = new TextDecoderStream();
-//    this.inputDone = this.port.readable.pipeTo(decoder.writable);
-//    this.inputStream = decoder.readable;
-//    this.reader = this.inputStream.getReader();
+    //let decoder = new TextDecoderStream();
+    //this.inputDone = this.port.readable.pipeTo(decoder.writable);
+    //this.inputStream = decoder.readable;
+    //this.reader = this.inputStream.getReader();
     this.reader = this.port.readable.getReader();
 
-    console.log("CONNECT: ", this);
-    this.readLoop(f);
+    console.log('CONNECT: ', this);
+    //Let cbConnect initiate this.readLoop(f);
   }
   
   async disconnect() {
@@ -121,49 +125,67 @@ class SerialHubPort {
   }
   
   writeToStream(...lines: string[]) {
-    if (!this.outputStream) return;
+    if (!this.outputStream) {
+      return;
+    }
     const writer = this.outputStream.getWriter();
     lines.forEach(line => {
-        console.log("[SEND]", line);
-        writer.write(line + "\n");
-      });
+      console.log('[SEND]', line);
+      writer.write(line);
+    });
     writer.releaseLock();
   }
   
-  async readLoop(f: Function) {
+  async readLoop(cbRead: Function) {
     while (true) {
-      if (!this.reader) break;
+      if (!this.reader) {
+        break;
+      }
       const { value, done } = await this.reader.read();
       if (value) {
-        console.log("[readLoop] VALUE", value);
-        f(value);
+        console.log('[readLoop] VALUE', value);
+        cbRead(value);
       }
       if (done) {
-        console.log("[readLoop] DONE", done);
+        console.log('[readLoop] DONE', done);
         this.reader.releaseLock();
         break;
       }
     }
   }
-  
 
   static isSupported(): boolean {
-    let NAV: Navigator = window.navigator;
-    if (NAV === undefined || NAV === null) return false;
-    let SER: any = (NAV as any).serial;
-    if (SER === undefined || SER === null) return false;
+    const NAV: Navigator = window.navigator;
+    if (NAV === undefined || NAV === null) {
+      return false;
+    }
+    const SER: any = (NAV as any).serial;
+    if (SER === undefined || SER === null) {
+      return false;
+    }
     return true;
   }
 
   static test(f: Function): SerialHubPort {
-    let W : any = (window as any);
-    let SER = new SerialHubPort( W.serPort );
+    const W: any = window as any;
+    const SER = new SerialHubPort(W.serPort);
     W.serPort = SER;
-    SER.connect(f).then( () : void => {
+    SER.connect().then((): void => {
+      SER.readLoop(f);
       console.log(SER);
-      SER.writeToStream("1");
+      SER.writeToStream('1');
     });
     return SER;
   }
 
+  static createHub(cbConnect: Function): SerialHubPort{
+    const W: any = (window as any);
+    const oldSER = W.serPort;
+    const SER = new SerialHubPort(oldSER);
+    W.serPort = SER; //Assign to a global location
+    SER.connect().then((): void => {
+      cbConnect(SER);
+    });
+    return SER;
+  }
 }
