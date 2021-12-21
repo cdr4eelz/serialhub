@@ -2402,13 +2402,13 @@
         "affectsGlobalScope": false
       },
       "./src/webseriallink.ts": {
-        "version": "e76e1b2b3280a7e9d435d652ee84aa6f94d14db29160adcc69b62e2598174037",
-        "signature": "b7f0b1e92632811418326e6eb70fc521a544c47bf43358eec4bedaa3f531c0cc",
+        "version": "6dff01b4d44b1944db871385389bb1e4326a36e2231e673a708e3074e89c7549",
+        "signature": "081db49944633cdb38ab58b1cc2db230c67ad4610f482f2dae6cfbd70ca0aece",
         "affectsGlobalScope": false
       },
       "./src/widget.ts": {
-        "version": "7cb4f171b1ee15e64998768e9dc7219a578031f2488a0d460158e8825c43d925",
-        "signature": "1e29eea76c7b0d55863ad0b6057f6194bea747175102b8f3ad97d3db154b25cf",
+        "version": "cef5f3697d9ef6739a3addf9184d2561cabf1c53a18db8551f447a943f814fb7",
+        "signature": "5bc10d6fe12399be2ea960f7c3ab8f1d25831c481f51920083a4b2999ba68ad1",
         "affectsGlobalScope": false
       },
       "./src/index.ts": {

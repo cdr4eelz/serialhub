@@ -20,8 +20,9 @@ import { UUID } from '@lumino/coreutils';
 import { SerialHubPort } from './webseriallink';
 
 export class SerialHubModel extends DOMWidgetModel {
-  defaults() {
-    return {...super.defaults(),
+  defaults(): any {
+    return {
+      ...super.defaults(),
       _model_name: SerialHubModel.model_name,
       _model_module: SerialHubModel.model_module,
       _model_module_version: SerialHubModel.model_module_version,
@@ -31,10 +32,10 @@ export class SerialHubModel extends DOMWidgetModel {
 
       isSupported: false,
       status: 'Initializing...',
-      value: 'Loading...',
+      value: 'Loading...'
     };
   }
-  
+
   private static _mytempid: string = utils.uuid();
   static get mytempid(): string {
     return SerialHubModel._mytempid;
@@ -48,8 +49,8 @@ export class SerialHubModel extends DOMWidgetModel {
   static model_name = 'SerialHubModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
-  static view_name = 'SerialHubView';   // Set to null if no view
-  static view_module = MODULE_NAME;   // Set to null if no view
+  static view_name = 'SerialHubView'; // Set to null if no view
+  static view_module = MODULE_NAME; // Set to null if no view
   static view_module_version = MODULE_VERSION;
 }
 
@@ -62,9 +63,9 @@ export class SerialHubView extends DOMWidgetView {
     this.el.classList.add('xx-serialhub-widget');
 
     /* Create a couple sub-Elements for our custom widget */
-    this._el_status = window.document.createElement("div");
+    this._el_status = window.document.createElement('div');
     this._el_status.classList.add('xx-serialhub-status');
-    this._el_value = window.document.createElement("pre");
+    this._el_value = window.document.createElement('pre');
     this._el_value.classList.add('xx-serialhub-value');
 
     /* Click events wrapped to capture "this" object */
@@ -91,31 +92,22 @@ export class SerialHubView extends DOMWidgetView {
     return this;
   }
 
-  changed_status() : void {
+  changed_status(): void {
     if (!this._el_status) {
       return;
     }
     this._el_status.textContent = this.model.get('status');
   }
-  changed_value() : void {
+  changed_value(): void {
     if (!this._el_value) {
       return;
     }
     this._el_value.textContent = this.model.get('value');
   }
 
-  click_status_OLD(this: SerialHubView, ev: MouseEvent): void {
-    //console.log(this, arguments, this.model);
-    let SHP = SerialHubPort.test((value: any) => {
-      console.log(value);
-      this.model.send({ type: 'binary' }, {}, [value]);
-    });
-    console.log('DONE_OLD', SHP);
-  }
-
   click_status(this: SerialHubView, ev: MouseEvent): void {
-    console.log('click_status', this, arguments, this.model);
-    let SHP = SerialHubPort.createHub((theSHP: SerialHubPort) => {
+    console.log('click_status', this, this.model, ev);
+    const SHP = SerialHubPort.createHub((theSHP: SerialHubPort) => {
       console.log('theSHP', theSHP);
       theSHP.readLoop((value: any) => {
         console.log('DATA-IN', value);
@@ -136,9 +128,10 @@ export class SerialHubView extends DOMWidgetView {
   msg_custom(this: SerialHubView, mData: Dict<any>, mBuffs: DataView[]): void {
     console.log(this, mData, mBuffs);
     const msgType = mData['type'];
-    if (msgType == 'text') {
+    if (msgType === 'text') {
       (window as any).serPort.writeToStream(mData['text']);
+    } else if (msgType === 'erik') {
+      console.log('CustomMSG: erik', mData, mBuffs);
     }
   }
-
 }

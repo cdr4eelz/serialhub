@@ -38,18 +38,30 @@ class SerialHubWidget(DOMWidget):
     def __init__(self, *args, **kwargs):
         DOMWidget.__init__(self, *args, **kwargs)
         self.on_msg(self.msg_custom)
-    
-    def msg_custom(self, obj, mData: Mapping[str,Any], mBufs: Optional[Sequence[ByteString]] = None) -> None:
-        msgType = mData['type'];
-        if (msgType == 'binary'):
-            for buf in mBufs:
-                self.value += str(binascii.b2a_hex(buf));
-        elif (msgType == 'text'):
-            self.value += mData['text'];
 
+    def msg_custom(self,
+            obj,
+            mdata: Mapping[str,Any],
+            mbufs: Optional[Sequence[ByteString]] = None
+        ) -> None:
+        """
+        msg_custom() method receives custom messages from the frontend client
+        """
+        msgtype = mdata['type']
+        if msgtype == 'binary':
+            for buf in mbufs:
+                self.value += str(binascii.b2a_hex(buf))
+        elif msgtype == 'text':
+            self.value += mdata['text']
 
-    def send_custom(self, mData: Mapping[str,Any], mBufs: Optional[Sequence[ByteString]] = None) -> None:
-        self.send(mData, mBufs)
+    def send_custom(self,
+            mdata: Mapping[str,Any],
+            mbufs: Optional[Sequence[ByteString]] = None
+        ) -> None:
+        """
+        send_custom() method sends custom message & bufs to frontend client
+        """
+        self.send(mdata, mbufs)
 
 
 #BinaryIO(IO[bytes])
@@ -67,14 +79,17 @@ class Serial(io.RawIOBase):
 
     def closed(self) -> bool:
         return True
-    
+
     def write(self, data: bytes) -> Optional[int]:
-        if self.closed(): raise ValueError("Stream closed")
+        if self.closed():
+            raise ValueError("Stream closed")
         return 0
-    
+
     def readinto(self, b: bytearray) -> Optional[int]:
-        if self.closed(): raise ValueError("Stream closed")
-        if (len(b) <= 0): return None
+        if self.closed():
+            raise ValueError("Stream closed")
+        if len(b) <= 0:
+            return None
         b[0] = 0
         return 1
 

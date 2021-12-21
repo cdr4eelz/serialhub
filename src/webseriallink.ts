@@ -13,11 +13,11 @@ interface IInputSignals {
   dsr: boolean;
 }
 interface ISerialOptions {
-  baudRate?: number; /* >0 */
-  dataBits?: number; /*ONLY: 7 8 */
+  baudRate?: number; // >0
+  dataBits?: number; //ONLY: 7 8
   parity?: 'none' | 'even' | 'odd';
-  stopBits?: number; /*ONLY: 1 2 */
-  bufferSize?: number; /* >0 */
+  stopBits?: number; //ONLY: 1 2
+  bufferSize?: number; // >0
 }
 interface ISerialPortInfo {
   serialNumber?: string;
@@ -30,7 +30,7 @@ interface ISerialPortInfo {
 }
 interface IRequestOption {
   usbVendorId?: number;
-  usbProductId?: number; /* usbVendorId required if productID present */
+  usbProductId?: number; // usbVendorId required if productID present
 }
 interface IRequestOptions {
   filters?: IRequestOption[];
@@ -45,8 +45,8 @@ interface ISerialPort {
   getInfo: () => ISerialPortInfo;
 }
 interface ISerial extends EventTarget {
-  onconnect: ((this: ISerial, ev: Event) => any) | null; /* SerialConnectionEvent */
-  ondisconnect: ((this: ISerial, ev: Event) => any) | null; /* SerialConnectionEvent */
+  onconnect: ((this: ISerial, ev: Event) => any) | null; // SerialConnectionEvent
+  ondisconnect: ((this: ISerial, ev: Event) => any) | null; // SerialConnectionEvent
   getPorts: () => Promise<ISerialPort[]>;
   requestPort: (options?: IRequestOptions) => Promise<ISerialPort>;
 }
@@ -73,9 +73,9 @@ export class SerialHubPort {
     //this.inputDone = null;
     this.reader = null;
   }
-  
-  async connect() {
-    const NAV: INavigatorSerial = (window.navigator as INavigatorSerial);
+
+  async connect(): Promise<void> {
+    const NAV: INavigatorSerial = window.navigator as INavigatorSerial;
     if (!NAV || !NAV.serial) {
       return;
     }
@@ -103,9 +103,9 @@ export class SerialHubPort {
     console.log('CONNECT: ', this);
     //Let cbConnect initiate this.readLoop(f);
   }
-  
-  async disconnect() {
-    console.log("CLOSE: ", this);
+
+  async disconnect(): Promise<void> {
+    console.log('CLOSE: ', this);
     if (this.reader) {
       await this.reader.cancel();
       this.reader = null;
@@ -123,7 +123,7 @@ export class SerialHubPort {
       this.port = null;
     }
   }
-  
+
   writeToStream(...lines: string[]) {
     if (!this.outputStream) {
       return;
@@ -135,8 +135,9 @@ export class SerialHubPort {
     });
     writer.releaseLock();
   }
-  
-  async readLoop(cbRead: Function) {
+
+  async readLoop(cbRead: Function): Promise<void> {
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       if (!this.reader) {
         break;
@@ -166,6 +167,7 @@ export class SerialHubPort {
     return true;
   }
 
+  /*
   static test(f: Function): SerialHubPort {
     const W: any = window as any;
     const SER = new SerialHubPort(W.serPort);
@@ -177,9 +179,10 @@ export class SerialHubPort {
     });
     return SER;
   }
+  */
 
-  static createHub(cbConnect: Function): SerialHubPort{
-    const W: any = (window as any);
+  static createHub(cbConnect: (theSER: SerialHubPort) => void): SerialHubPort {
+    const W: any = window as any;
     const oldSER = W.serPort;
     const SER = new SerialHubPort(oldSER);
     W.serPort = SER; //Assign to a global location

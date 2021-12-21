@@ -1,6 +1,6 @@
 {
   "name": "serialhub",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "WebSerial widget for Jupyter Hub/Lab",
   "keywords": [
     "jupyter",
