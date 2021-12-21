@@ -12,7 +12,7 @@ import { MODULE_NAME, MODULE_VERSION } from './version';
 
 // Import the CSS
 //import '../css/widget.css'
-import '../style/widget.css';
+import '../style/index.css';
 
 import * as utils from '@jupyter-widgets/base';
 import { UUID } from '@lumino/coreutils';
@@ -130,8 +130,8 @@ export class SerialHubView extends DOMWidgetView {
     const msgType = mData['type'];
     if (msgType === 'text') {
       (window as any).serPort.writeToStream(mData['text']);
-    } else if (msgType === 'erik') {
-      console.log('CustomMSG: erik', mData, mBuffs);
+    } else {
+      console.log('UNKNOWN MESSAGE: ', mData, mBuffs);
     }
   }
 }
