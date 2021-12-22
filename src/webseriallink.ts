@@ -56,8 +56,9 @@ interface INavigatorSerial extends Navigator {
 
 export class SerialHubPort {
   port: ISerialPort | null;
-  outputStream: WritableStream | null;
-  outputDone: Promise<void> | null;
+  //outputStream: WritableStream | null;
+  //outputDone: Promise<void> | null;
+  writer: WritableStreamDefaultWriter | null;
   //inputStream: ReadableStream |null;
   //inputDone: Promise<void> |null;
   reader: ReadableStreamDefaultReader | null;
@@ -67,8 +68,9 @@ export class SerialHubPort {
       oldSP.disconnect(); //Dispose of prior "port" if passed to us
     }
     this.port = null;
-    this.outputStream = null;
-    this.outputDone = null;
+    //this.outputStream = null;
+    //this.outputDone = null;
+    this.writer = null;
     //this.inputStream = null;
     //this.inputDone = null;
     this.reader = null;
@@ -90,11 +92,12 @@ export class SerialHubPort {
     this.port = rawPort;
     await this.port.open({ baudRate: 115200 });
 
-    const encoder = new TextEncoderStream();
-    this.outputDone = encoder.readable.pipeTo(this.port.writable);
-    this.outputStream = encoder.writable;
+    //const encoder = new TextEncoderStream();
+    //this.outputDone = encoder.readable.pipeTo(this.port.writable);
+    //this.outputStream = encoder.writable;
+    this.writer = this.port.writable.getWriter();
 
-    //let decoder = new TextDecoderStream();
+    //const decoder = new TextDecoderStream();
     //this.inputDone = this.port.readable.pipeTo(decoder.writable);
     //this.inputStream = decoder.readable;
     //this.reader = this.inputStream.getReader();
@@ -112,11 +115,13 @@ export class SerialHubPort {
       //if (this.inputDone) await this.inputDone.catch(() => {});
       //this.inputDone = null;
     }
-    if (this.outputStream) {
-      await this.outputStream.getWriter().close();
-      await this.outputDone;
-      this.outputStream = null;
-      this.outputDone = null;
+    if (this.writer) {
+      this.writer.close();
+      this.writer = null;
+      //await this.outputStream.getWriter().close();
+      //await this.outputDone;
+      //this.outputStream = null;
+      //this.outputDone = null;
     }
     if (this.port) {
       await this.port.close();
@@ -124,24 +129,19 @@ export class SerialHubPort {
     }
   }
 
-  writeToStream(...lines: string[]) {
-    if (!this.outputStream) {
-      return;
+  writeToStream(data: ArrayBufferView[] | ArrayBuffer[]): void {
+    if (this.writer) {
+      data.forEach(async (d: any) => {
+        //Anonymous function is ASYNC so it can AWAIT the write() call below
+        console.log('[WRITE]', d);
+        await this.writer?.write(d); // AWAIT in sequence, to avoid parallel promises
+      });
     }
-    const writer = this.outputStream.getWriter();
-    lines.forEach(line => {
-      console.log('[SEND]', line);
-      writer.write(line);
-    });
-    writer.releaseLock();
   }
 
-  async readLoop(cbRead: Function): Promise<void> {
+  async readLoop(cbRead: (theVAL: any) => void): Promise<void> {
     // eslint-disable-next-line no-constant-condition
-    while (true) {
-      if (!this.reader) {
-        break;
-      }
+    while (this.reader) {
       const { value, done } = await this.reader.read();
       if (value) {
         console.log('[readLoop] VALUE', value);

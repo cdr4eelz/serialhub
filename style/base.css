@@ -1,15 +1,22 @@
 .xx-serialhub-widget {
-  padding: 0px 2px;
+  padding: 1px 1px;
 }
 .xx-serialhub-status {
   background-color: lightseagreen;
-  padding: 0px 2px;
+  border: 1px solid lightcoral;
+  padding: 2px 4px 1px;
   font-weight: bold;
-  min-height: 10px;
+  min-height: 12px;
 }
 .xx-serialhub-value {
   white-space: pre-wrap;
   font-weight: normal;
   font-family: "Lucida Console", Courier, monospace;
+  min-height: 10px;
+}
+.xx-serialhub-stats {
+  padding: 1px 10px 1px;
+  font-weight: normal;
+  font-style: italic;
   min-height: 10px;
 }

@@ -25,7 +25,8 @@
     "yaml.customTags": [
     
     ],
-    "python.pythonPath": "/opt/conda/bin/python",
+    "python.pythonPath": "/opt/conda/envs/jupyterlab/bin/python",
     "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "eslint.alwaysShowStatus": true
 }
