@@ -124,17 +124,30 @@ export class SerialHubView extends DOMWidgetView {
     }
   }
 
+  cb_read(this: SerialHubView, value: ArrayBuffer): void {
+    console.log('DATA-IN', value);
+    this.model.send({ type: 'RECV' }, {}, [value]);
+    const cnt: number = this.model.get('pkt_recv_front') + 1;
+    this.model.set('pkt_recv_front', cnt);
+  }
+
+  cb_connect(this: SerialHubView): void {
+    console.log('cb_connect', this._shp);
+    this._shp?.readLoop((value: any) => {
+      this.cb_read(value);
+    });
+    console.log('DONE cb_connect');
+  }
+
   click_status(this: SerialHubView, ev: MouseEvent): void {
     console.log('click_status', this, this.model, ev);
-    this._shp = SerialHubPort.createHub((theSHP: SerialHubPort) => {
-      console.log('theSHP', theSHP);
-      theSHP.readLoop((value: any) => {
-        console.log('DATA-IN', value);
-        this.model.send({ type: 'RECV' }, {}, [value]);
-        const cnt: number = this.model.get('pkt_recv_front') + 1;
-        this.model.set('pkt_recv_front', cnt);
+    this._shp = SerialHubPort.createHub();
+    const filter1 = { usbVendorId: 0x2047 }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
+    this._shp
+      .connect({ filters: [filter1] }, { baudRate: 115200 })
+      .then((): void => {
+        this.cb_connect();
       });
-    });
     console.log('DONE click', this._shp);
   }
 

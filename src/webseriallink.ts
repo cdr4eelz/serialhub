@@ -76,7 +76,10 @@ export class SerialHubPort {
     this.reader = null;
   }
 
-  async connect(): Promise<void> {
+  async connect(
+    requestOpts: IRequestOptions,
+    serialOpts: ISerialOptions
+  ): Promise<void> {
     const NAV: INavigatorSerial = window.navigator as INavigatorSerial;
     if (!NAV || !NAV.serial) {
       return;
@@ -84,13 +87,12 @@ export class SerialHubPort {
     if (this.port) {
       await this.disconnect();
     }
-    const filter = { usbVendorId: 0x2047 }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
-    const rawPort = await NAV.serial.requestPort({ filters: [filter] });
+    const rawPort = await NAV.serial.requestPort(requestOpts);
     if (!rawPort) {
       return;
     }
     this.port = rawPort;
-    await this.port.open({ baudRate: 115200 });
+    await this.port.open(serialOpts);
 
     //const encoder = new TextEncoderStream();
     //this.outputDone = encoder.readable.pipeTo(this.port.writable);
@@ -166,14 +168,10 @@ export class SerialHubPort {
     return true;
   }
 
-  static createHub(cbConnect: (theSER: SerialHubPort) => void): SerialHubPort {
-    const W: any = window as any;
-    const oldSER = W.serPort;
-    const SER = new SerialHubPort(oldSER);
-    W.serPort = SER; //Assign to a global location
-    SER.connect().then((): void => {
-      cbConnect(SER);
-    });
-    return SER;
+  static createHub(): SerialHubPort {
+    const oldSER = (window as any).serPort;
+    const newSHP = new SerialHubPort(oldSER);
+    (window as any).serPort = newSHP; //Assign to a global location
+    return newSHP;
   }
 }
