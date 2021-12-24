@@ -1,7 +1,7 @@
 // Copyright (c) cdr4eelz
 // Distributed under the terms of the Modified BSD License.
 
-  import {
+import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';

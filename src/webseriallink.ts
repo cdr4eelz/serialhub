@@ -140,7 +140,6 @@ export class SerialHubPort {
   }
 
   async readLoop(cbRead: (theVAL: any) => void): Promise<void> {
-    // eslint-disable-next-line no-constant-condition
     while (this.reader) {
       const { value, done } = await this.reader.read();
       if (value) {
@@ -166,20 +165,6 @@ export class SerialHubPort {
     }
     return true;
   }
-
-  /*
-  static test(f: Function): SerialHubPort {
-    const W: any = window as any;
-    const SER = new SerialHubPort(W.serPort);
-    W.serPort = SER;
-    SER.connect().then((): void => {
-      SER.readLoop(f);
-      console.log(SER);
-      SER.writeToStream('1');
-    });
-    return SER;
-  }
-  */
 
   static createHub(cbConnect: (theSER: SerialHubPort) => void): SerialHubPort {
     const W: any = window as any;

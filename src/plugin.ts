@@ -1,24 +1,15 @@
 // Copyright (c) cdr4eelz
 // Distributed under the terms of the Modified BSD License.
 
-import {
-  Application, IPlugin
-} from '@lumino/application';
+import { Application, IPlugin } from '@lumino/application';
 
-import {
-  Widget
-} from '@lumino/widgets';
+import { Widget } from '@lumino/widgets';
 
-import {
-  IJupyterWidgetRegistry
- } from '@jupyter-widgets/base';
+import { IJupyterWidgetRegistry } from '@jupyter-widgets/base';
 
 import * as widgetExports from './widget';
 
-import {
-  MODULE_NAME, MODULE_VERSION
-} from './version';
-
+import { MODULE_NAME, MODULE_VERSION } from './version';
 
 const EXTENSION_ID = 'serialhub_plugin';
 /*
@@ -37,7 +28,7 @@ const serialhubPlugin: IPlugin<Application<Widget>, void> = {
   requires: [IJupyterWidgetRegistry],
   activate: activateWidgetExtension,
   autoStart: true
-} // as unknown as IPlugin<Application<Widget>, void>;
+}; // as unknown as IPlugin<Application<Widget>, void>;
 // the "as unknown as ..." typecast above is solely to support JupyterLab 1
 // and 2 in the same codebase and should be removed when we migrate to Lumino.
 
@@ -46,10 +37,14 @@ export default serialhubPlugin;
 /**
  * Activate the widget extension.
  */
-function activateWidgetExtension(app: Application<Widget>, registry: IJupyterWidgetRegistry): void {
+function activateWidgetExtension(
+  app: Application<Widget>,
+  registry: IJupyterWidgetRegistry
+): void {
+  console.log('Registering serialhub widget...');
   registry.registerWidget({
     name: MODULE_NAME,
     version: MODULE_VERSION,
-    exports: widgetExports,
+    exports: widgetExports
   });
 }

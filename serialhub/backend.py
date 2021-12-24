@@ -4,7 +4,7 @@
 # Copyright (c) cdr4eelz.
 # Distributed under the terms of the Modified BSD License.
 
-"""
+"""\
 SerialHub backend widget & support classes
 """
 
@@ -12,16 +12,14 @@ SerialHub backend widget & support classes
 from typing import Sequence, Mapping, Any, ByteString, Optional, NoReturn #, BinaryIO, IO
 import io #, binascii
 
-from ipywidgets import DOMWidget, register
+import ipywidgets #from ipywidgets import DOMWidget, register
 import traitlets #from traitlets import Unicode, Int, Bool, Complex, Enum
 from ._frontend import module_name, module_version
 
-@register
-class SerialHubWidget(DOMWidget):
-    """
-    SerialHubWidget class inherits ipywidgets.DOMWidget
-      Model: SerialHubModel, View: SerialHubView
-      Synchronized attributes: value (Unicode), status (Unicode)
+@ipywidgets.register
+class SerialHubWidget(ipywidgets.DOMWidget):
+    """SerialHubWidget class inherits ipywidgets.DOMWidget
+        Model: SerialHubModel, View: SerialHubView
     """
     _model_name = traitlets.Unicode('SerialHubModel').tag(sync=True)
     _model_module = traitlets.Unicode(module_name).tag(sync=True)
@@ -40,17 +38,15 @@ class SerialHubWidget(DOMWidget):
     pkt_send_back = traitlets.Int(default_value=0).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
-        DOMWidget.__init__(self, *args, **kwargs)
+        ipywidgets.DOMWidget.__init__(self, *args, **kwargs)
         self.on_msg(self.msg_custom)
 
     def msg_custom(self,
-                widget: DOMWidget,  # Same as self, in this case, a SerialHubWidget
+                widget: ipywidgets.DOMWidget,  # Same as self  pylint: disable=unused-argument
                 content: Mapping[str, Any],
                 buffers: Optional[Sequence[ByteString]] = None
     ) -> None:
-        """
-        msg_custom() method receives custom message callbacks from the frontend client
-        """
+        """Receives custom message callbacks from the frontend client."""
         msgtype = str(content['type'])
         if msgtype == 'RECV':
             self.pkt_recv_back += 1
@@ -67,16 +63,17 @@ class SerialHubWidget(DOMWidget):
                 content: Mapping[str, Any],
                 buffers: Optional[Sequence[ByteString]] = None
     ) -> None:
-        """
-        send_custom(self,content,buffers) sends custom message to frontend
+        """Sends a custom message to frontend.
+            Map "content" gets serialized to JSON available as JS object in client.
+            Optional "buffers" get sent as binary data (unlike binary data within "content").
         """
         self.send(content, buffers)
 
     def write_bytes(self,
                 data: ByteString
     ) -> None:
-        """
-        write_bytes() sends a single buffer for the client to write() as serial data
+        """Sends a buffer for the client to write() as serial data.
+          "data" is a single bytestring to be output by client to the serialport
         """
         self.send_custom({'type': 'SEND'}, [data])
         self.pkt_send_back += 1
@@ -86,39 +83,38 @@ class SerialHubWidget(DOMWidget):
                 enc: Optional[str] = 'ascii',
                 errs: Optional[str] = 'ignore'
     ) -> None:
+        """Sends a single buffer for the client to write() as serial data.
+            Optional "enc" for desired encoding (default 'ascii')
+            Optional "errs" for desired encoding error handling (default 'ignore')
         """
-        write_str() sends a single buffer for the client to write() as serial data
-        """
-        self.send_custom(
-            {'type': 'SEND'},
-            [data.encode(encoding=enc, errors=errs)]
-        )
-        self.pkt_send_back += 1
+        self.write_bytes(data.encode(encoding=enc, errors=errs))
 
 
 #BinaryIO(IO[bytes])
 class Serial(io.RawIOBase):
-    """
-    Serial IO proxied to frontend browser serial
-    """
-    def __init__(self, *args, **kwargs):
+    """Serial IO proxied to frontend browser serial"""
+    def __init__(self, widget: SerialHubWidget): #, *args, **kwargs):
         io.RawIOBase.__init__(self)
+        self.widget = widget
 
     def readable(self) -> bool:
         return True
     def writable(self) -> bool:
         return True
-    def isatty(self)   -> bool:
+    def isatty(self) -> bool:
         return False
     def seekable(self) -> bool:
         return False
 
     def closed(self) -> bool:
-        return True
+        """Currently True only if widget reports unsupported"""
+        return self.widget.isSupported
 
     def write(self, data: bytes) -> Optional[int]:
         if self.closed():
             raise ValueError("Stream closed")
+        if len(data) <= 0:
+            return None
         return 0
 
     def readinto(self, b: bytearray) -> Optional[int]:
@@ -130,10 +126,10 @@ class Serial(io.RawIOBase):
         return 1
 
     def fileno(self) -> NoReturn:
-        raise OSError('No fileno')
+        raise OSError("No fileno")
     def tell(self) -> NoReturn:
-        raise OSError('Not seekable')
+        raise OSError("Not seekable")
     def seek(self, offset: int, whence = 0) -> NoReturn:
-        raise OSError('Not seekable')
+        raise OSError("Not seekable")
     def truncate(self, size: Optional[int] = None) -> NoReturn:
-        raise OSError('Not seekable')
+        raise OSError("Not seekable")
