@@ -29,9 +29,11 @@ export class SerialHubModel extends DOMWidgetModel {
       _view_module: SerialHubModel.view_module,
       _view_module_version: SerialHubModel.view_module_version,
 
-      isSupported: false,
+      is_supported: false,
       status: 'Initializing...',
       value: 'Loading...',
+      request_options: {},
+      serial_options: {},
       pkt_recv_front: 0,
       pkt_recv_back: 0,
       pkt_send_front: 0,
@@ -88,19 +90,28 @@ export class SerialHubView extends DOMWidgetView {
     this.model.on('change:status', this.changed_status, this);
     this.model.on('change:value', this.changed_value, this);
     this.model.on('change:pkt_recv_front', this.changed_stats, this);
+    this.model.on('change:request_options', this.changed_request_options, this);
+    this.model.on('change:serial_options', this.changed_serial_options, this);
     this.model.on('change:pkt_recv_back', this.changed_stats, this);
     this.model.on('change:pkt_send_front', this.changed_stats, this);
     this.model.on('change:pkt_send_back', this.changed_stats, this);
 
     this.model.on('msg:custom', this.msg_custom, this);
 
-    this.model.set('isSupported', SerialHubPort.isSupported());
+    this.model.set('is_supported', SerialHubPort.isSupported());
     this.model.set(
       'status',
       SerialHubPort.isSupported() ? 'Supported' : 'Unsupported'
     );
     this.touch();
     return this;
+  }
+
+  changed_request_options(): void {
+    console.log('SET request_options:', this.model.get('request_options'));
+  }
+  changed_serial_options(): void {
+    console.log('SET serial_options:', this.model.get('serial_options'));
   }
 
   changed_status(): void {
@@ -116,7 +127,7 @@ export class SerialHubView extends DOMWidgetView {
   changed_stats(): void {
     if (this._el_stats) {
       let stats = '';
-      stats += 'Rf:' + this.model.get('pkt_recv_front');
+      stats += ' Rf:' + this.model.get('pkt_recv_front');
       stats += ' Rb:' + this.model.get('pkt_recv_back');
       stats += ' Sf:' + this.model.get('pkt_send_front');
       stats += ' Sb:' + this.model.get('pkt_send_back');
@@ -142,9 +153,11 @@ export class SerialHubView extends DOMWidgetView {
   click_status(this: SerialHubView, ev: MouseEvent): void {
     console.log('click_status', this, this.model, ev);
     this._shp = SerialHubPort.createHub();
-    const filter1 = { usbVendorId: 0x2047 }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
+    const reqOpts = this.model.get('request_options');
+    const serOpts = this.model.get('serial_options');
+    //const filter1 = { usbVendorId: 0x2047 }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
     this._shp
-      .connect({ filters: [filter1] }, { baudRate: 115200 })
+      .connect(reqOpts, serOpts)
       .then((): void => {
         this.cb_connect();
       });

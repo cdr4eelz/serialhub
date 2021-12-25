@@ -85,24 +85,16 @@ export class SerialHubPort {
       return;
     }
     if (this.port) {
-      await this.disconnect();
+      await this.disconnect(); //TODO: Catch and suppress exceptions
     }
     const rawPort = await NAV.serial.requestPort(requestOpts);
     if (!rawPort) {
-      return;
+      return; //TODO: Throw exception
     }
     this.port = rawPort;
     await this.port.open(serialOpts);
 
-    //const encoder = new TextEncoderStream();
-    //this.outputDone = encoder.readable.pipeTo(this.port.writable);
-    //this.outputStream = encoder.writable;
     this.writer = this.port.writable.getWriter();
-
-    //const decoder = new TextDecoderStream();
-    //this.inputDone = this.port.readable.pipeTo(decoder.writable);
-    //this.inputStream = decoder.readable;
-    //this.reader = this.inputStream.getReader();
     this.reader = this.port.readable.getReader();
 
     console.log('CONNECT: ', this);
@@ -111,19 +103,14 @@ export class SerialHubPort {
 
   async disconnect(): Promise<void> {
     console.log('CLOSE: ', this);
+    //TODO: Research proper closing steps and catch exceptions
     if (this.reader) {
       await this.reader.cancel();
       this.reader = null;
-      //if (this.inputDone) await this.inputDone.catch(() => {});
-      //this.inputDone = null;
     }
     if (this.writer) {
-      this.writer.close();
+      await this.writer.close();
       this.writer = null;
-      //await this.outputStream.getWriter().close();
-      //await this.outputDone;
-      //this.outputStream = null;
-      //this.outputDone = null;
     }
     if (this.port) {
       await this.port.close();
@@ -145,7 +132,7 @@ export class SerialHubPort {
     while (this.reader) {
       const { value, done } = await this.reader.read();
       if (value) {
-        console.log('[readLoop] VALUE', value);
+        //console.log('[readLoop] VALUE', value);
         cbRead(value);
       }
       if (done) {

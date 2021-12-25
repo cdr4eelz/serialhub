@@ -41,7 +41,7 @@ function activateWidgetExtension(
   app: Application<Widget>,
   registry: IJupyterWidgetRegistry
 ): void {
-  console.log('Registering serialhub widget...');
+  console.log('Registering serialhub widget...', MODULE_VERSION, MODULE_NAME);
   registry.registerWidget({
     name: MODULE_NAME,
     version: MODULE_VERSION,
