@@ -29,17 +29,25 @@ class SerialHubWidget(ipywidgets.DOMWidget):
     _view_module_version = traitlets.Unicode(module_version).tag(sync=True)
 
     is_supported = traitlets.Bool(allow_none=True, read_only=True).tag(sync=True)
-    #TODO: Use an Enum() rather than string
+    #TODO: Use Enum and traitlets.UseEnum() to constrain "status" values???
     status = traitlets.Unicode(default_value='Checking...').tag(sync=True)
     value = traitlets.Unicode(default_value='').tag(sync=True)
-    request_options = traitlets.Dict(default_value={
-        'filters': []
+    request_options = traitlets.Dict(per_key_traits={
+            'filters': traitlets.List(trait=traitlets.Dict())
+        }, default_value={
+            'filters': []
     }).tag(sync=True)
-    serial_options = traitlets.Dict(default_value={
-        'baudRate': 9600,
-        'dataBits': 8,
-        'parity': 'none',
-        'stopBits': 1
+    serial_options = traitlets.Dict(
+        per_key_traits={
+            'baudRate': traitlets.Int(),
+            'dataBits': traitlets.Int(),
+            'parity': traitlets.Unicode(),
+            'stopBits': traitlets.Int()
+        }, default_value={
+            'baudRate': 9600,
+            'dataBits': 8,
+            'parity': 'none',
+            'stopBits': 1
     }).tag(sync=True)
     pkt_recv_front = traitlets.Int(default_value=0, read_only=True).tag(sync=True)
     pkt_recv_back = traitlets.Int(default_value=0).tag(sync=True)

@@ -16,7 +16,12 @@ import '../style/index.css'; //was '../css/widget.css'
 import * as utils from '@jupyter-widgets/base';
 import { UUID } from '@lumino/coreutils';
 
-import { SerialHubPort } from './webseriallink';
+import {
+  IRequestOptions,
+  ISerialOptions,
+  ISerialPortInfo
+} from './webserialtypes';
+import { SerialHubPort } from './serialhubport';
 
 export class SerialHubModel extends DOMWidgetModel {
   defaults(): any {
@@ -107,11 +112,34 @@ export class SerialHubView extends DOMWidgetView {
     return this;
   }
 
+  get_port_options(): [IRequestOptions, ISerialOptions] {
+    return [
+      this.model.get('request_options'),
+      this.model.get('serial_options')
+    ];
+  }
+  update_stats_title(): void {
+    const [reqOpts, serOpts] = this.get_port_options();
+    let title =
+      'Request-Options: ' +
+      JSON.stringify(reqOpts) +
+      '\r\nSerial-Options: ' +
+      JSON.stringify(serOpts);
+    const serInfo: ISerialPortInfo | undefined = this._shp?.port?.getInfo();
+    if (serInfo) {
+      title += '\r\nPort-Info:' + JSON.stringify(serInfo);
+    }
+    if (this._el_stats) {
+      this._el_stats.title = title;
+    }
+  }
   changed_request_options(): void {
     console.log('SET request_options:', this.model.get('request_options'));
+    this.update_stats_title();
   }
   changed_serial_options(): void {
     console.log('SET serial_options:', this.model.get('serial_options'));
+    this.update_stats_title();
   }
   changed_status(): void {
     if (this._el_status && this.model) {
@@ -139,15 +167,18 @@ export class SerialHubView extends DOMWidgetView {
     try {
       this.model.send({ type: 'RECV' }, {}, [value]);
     } catch (e) {
+      console.log('Failed to send serial data to backend.', e);
       //TODO: Shutdown the reader & connection on fatal errors
       throw e; //Rethrow exception
     }
+    //Only increment statistics if send() was successful
     const cnt: number = this.model.get('pkt_recv_front') + 1;
     this.model.set('pkt_recv_front', cnt);
   }
 
   cb_connect(this: SerialHubView): void {
     console.log('cb_connect', this._shp);
+    this.update_stats_title(); //Update serialPortInfo since we connected
     this._shp?.readLoop((value: any) => {
       this.cb_read(value);
     });
@@ -157,16 +188,13 @@ export class SerialHubView extends DOMWidgetView {
   click_status(this: SerialHubView, ev: MouseEvent): void {
     console.log('click_status', this, this.model, ev);
     this._shp = SerialHubPort.createHub();
-    const reqOpts = this.model.get('request_options');
-    const serOpts = this.model.get('serial_options');
     //const reqOpts = { filters: [{usbVendorId: 0x2047}] }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
     //const serOpts = { baudRate: 115200 };
-    console.log("Connect with options...", reqOpts, serOpts);
-    this._shp
-      .connect(reqOpts, serOpts)
-      .then((): void => {
-        this.cb_connect();
-      });
+    const [reqOpts, serOpts] = this.get_port_options(); //Unpack options to local vars
+    console.log('Connect with options...', reqOpts, serOpts);
+    this._shp.connect(reqOpts, serOpts).then((): void => {
+      this.cb_connect();
+    });
     console.log('DONE click', this._shp);
   }
 

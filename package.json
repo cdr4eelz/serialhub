@@ -1,6 +1,6 @@
 {
   "name": "serialhub",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "description": "WebSerial widget for Jupyter Hub/Lab",
   "keywords": [
     "jupyter",
@@ -73,6 +73,7 @@
     "prettier": "^2.1.1",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.3",
+    "@types/backbone": "~1.4.15",
     "webpack": "^5",
     "webpack-cli": "^4",
     "source-map-loader": "^0.2.4",

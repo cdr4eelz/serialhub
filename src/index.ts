@@ -21,4 +21,5 @@ export default plugin;
 
 export * from './version';
 export * from './widget';
-export * from './webseriallink';
+export * from './webserialtypes';
+export * from './serialhubport';

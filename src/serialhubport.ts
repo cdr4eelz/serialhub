@@ -1,65 +1,20 @@
 // Copyright (c) cdr4eelz
 // Distributed under the terms of the Modified BSD License.
 
-interface IOutputSignals {
-  dtr?: boolean;
-  rts?: boolean;
-  brk?: boolean;
-}
-interface IInputSignals {
-  dcd: boolean;
-  cts: boolean;
-  ri: boolean;
-  dsr: boolean;
-}
-interface ISerialOptions {
-  baudRate?: number; // >0
-  dataBits?: number; //ONLY: 7 8
-  parity?: 'none' | 'even' | 'odd';
-  stopBits?: number; //ONLY: 1 2
-  bufferSize?: number; // >0
-}
-interface ISerialPortInfo {
-  serialNumber?: string;
-  manufacturer?: string;
-  locationId?: number | string;
-  vendorId?: number | string;
-  vendor?: string;
-  productId?: number | string;
-  product?: string;
-}
-interface IRequestOption {
-  usbVendorId?: number;
-  usbProductId?: number; // usbVendorId required if productID present
-}
-interface IRequestOptions {
-  filters?: IRequestOption[];
-}
-interface ISerialPort {
-  open: (options?: ISerialOptions) => Promise<void>;
-  close: () => Promise<void>;
-  readonly readable: ReadableStream; //AKA: "in"
-  readonly writable: WritableStream; //AKA: "out"
-  getSignals: () => Promise<IInputSignals>;
-  setSignals: (signals: IOutputSignals) => Promise<void>;
-  getInfo: () => ISerialPortInfo;
-}
-interface ISerial extends EventTarget {
-  onconnect: ((this: ISerial, ev: Event) => any) | null; // SerialConnectionEvent
-  ondisconnect: ((this: ISerial, ev: Event) => any) | null; // SerialConnectionEvent
-  getPorts: () => Promise<ISerialPort[]>;
-  requestPort: (options?: IRequestOptions) => Promise<ISerialPort>;
-}
-interface INavigatorSerial extends Navigator {
-  readonly serial?: ISerial;
-}
+import {
+  ISerialPort,
+  IRequestOptions,
+  ISerialOptions,
+  INavigatorSerial
+} from './webserialtypes';
 
+/* SerilHubPort class to simplify access to WebSerial ports */
 export class SerialHubPort {
   port: ISerialPort | null;
   //outputDone: Promise<void> | null;
-  writer: WritableStreamDefaultWriter | null;
+  protected writer: WritableStreamDefaultWriter | null;
   //inputDone: Promise<void> |null;
-  reader: ReadableStreamDefaultReader | null;
+  protected reader: ReadableStreamDefaultReader | null;
 
   constructor(oldSP?: SerialHubPort) {
     if (oldSP) {
@@ -79,7 +34,14 @@ export class SerialHubPort {
       return;
     }
     if (this.port) {
-      await this.disconnect(); //TODO: Catch and suppress exceptions
+      //Implies potentially "connected" status if this.port is set
+      try {
+        await this.disconnect();
+      } catch (e) {
+        console.log('Ignoring exception', e);
+      } finally {
+        this.port = null; //Ensure it is null before proceeding
+      }
     }
     const rawPort = await NAV.serial.requestPort(requestOpts);
     if (!rawPort) {
@@ -97,7 +59,7 @@ export class SerialHubPort {
 
   async disconnect(): Promise<void> {
     console.log('CLOSE: ', this);
-    //TODO: Verify proper closing steps for reader/writer & port
+    //TODO: Verify proper closing steps for reader/writer vs the port itself
     try {
       await this.reader?.cancel();
     } catch (e) {
