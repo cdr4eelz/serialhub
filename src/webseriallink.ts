@@ -56,10 +56,8 @@ interface INavigatorSerial extends Navigator {
 
 export class SerialHubPort {
   port: ISerialPort | null;
-  //outputStream: WritableStream | null;
   //outputDone: Promise<void> | null;
   writer: WritableStreamDefaultWriter | null;
-  //inputStream: ReadableStream |null;
   //inputDone: Promise<void> |null;
   reader: ReadableStreamDefaultReader | null;
 
@@ -68,11 +66,7 @@ export class SerialHubPort {
       oldSP.disconnect(); //Dispose of prior "port" if passed to us
     }
     this.port = null;
-    //this.outputStream = null;
-    //this.outputDone = null;
     this.writer = null;
-    //this.inputStream = null;
-    //this.inputDone = null;
     this.reader = null;
   }
 
@@ -89,7 +83,7 @@ export class SerialHubPort {
     }
     const rawPort = await NAV.serial.requestPort(requestOpts);
     if (!rawPort) {
-      return; //TODO: Throw exception
+      return; //TODO: Throw exception? The requestPort() probably already threw error
     }
     this.port = rawPort;
     await this.port.open(serialOpts);
@@ -103,18 +97,25 @@ export class SerialHubPort {
 
   async disconnect(): Promise<void> {
     console.log('CLOSE: ', this);
-    //TODO: Research proper closing steps and catch exceptions
-    if (this.reader) {
-      await this.reader.cancel();
+    //TODO: Verify proper closing steps for reader/writer & port
+    try {
+      await this.reader?.cancel();
+    } catch (e) {
+      //Ignore exception on reader
+    } finally {
       this.reader = null;
     }
-    if (this.writer) {
-      await this.writer.close();
+    try {
+      await this.writer?.close();
+    } catch (e) {
+      //Ignore exception on writer
+    } finally {
       this.writer = null;
     }
-    if (this.port) {
-      await this.port.close();
-      this.port = null;
+    try {
+      await this.port?.close(); //Let exceptions through from here
+    } finally {
+      this.port = null; //But clear this.port reference
     }
   }
 

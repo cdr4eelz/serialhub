@@ -113,7 +113,6 @@ export class SerialHubView extends DOMWidgetView {
   changed_serial_options(): void {
     console.log('SET serial_options:', this.model.get('serial_options'));
   }
-
   changed_status(): void {
     if (this._el_status && this.model) {
       this._el_status.textContent = this.model.get('status');
@@ -137,7 +136,12 @@ export class SerialHubView extends DOMWidgetView {
 
   cb_read(this: SerialHubView, value: ArrayBuffer): void {
     console.log('DATA-IN', value);
-    this.model.send({ type: 'RECV' }, {}, [value]);
+    try {
+      this.model.send({ type: 'RECV' }, {}, [value]);
+    } catch (e) {
+      //TODO: Shutdown the reader & connection on fatal errors
+      throw e; //Rethrow exception
+    }
     const cnt: number = this.model.get('pkt_recv_front') + 1;
     this.model.set('pkt_recv_front', cnt);
   }
@@ -155,7 +159,9 @@ export class SerialHubView extends DOMWidgetView {
     this._shp = SerialHubPort.createHub();
     const reqOpts = this.model.get('request_options');
     const serOpts = this.model.get('serial_options');
-    //const filter1 = { usbVendorId: 0x2047 }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
+    //const reqOpts = { filters: [{usbVendorId: 0x2047}] }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
+    //const serOpts = { baudRate: 115200 };
+    console.log("Connect with options...", reqOpts, serOpts);
     this._shp
       .connect(reqOpts, serOpts)
       .then((): void => {
