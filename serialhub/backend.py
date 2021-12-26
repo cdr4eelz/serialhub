@@ -52,7 +52,7 @@ class SerialHubWidget(ipywidgets.DOMWidget):
         self.on_msg(self.msg_custom)
 
     def msg_custom(self,
-                widget: ipywidgets.DOMWidget,  # Same as self  pylint: disable=unused-argument
+                widget: ipywidgets.DOMWidget,  #pylint: disable=unused-argument
                 content: Mapping[str, Any],
                 buffers: Optional[Sequence[ByteString]] = None
     ) -> None:
