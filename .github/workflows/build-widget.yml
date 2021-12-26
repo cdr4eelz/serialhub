@@ -27,7 +27,7 @@ jobs:
         jlpm run eslint:check
         python -m pip install .
 
-        jupyter server extension list 2>&1 | grep -ie "serialhub.*OK"
+        jupyter server extension list 2>&1 | grep -ie "serialhub.*OK" | true
 
         jupyter labextension list 2>&1 | grep -ie "serialhub.*OK"
         python -m jupyterlab.browser_check
