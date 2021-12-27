@@ -42,7 +42,9 @@ class SerialHubWidget(ipywidgets.DOMWidget):
             'baudRate': traitlets.Int(),
             'dataBits': traitlets.Int(),
             'parity': traitlets.Unicode(),
-            'stopBits': traitlets.Int()
+            'stopBits': traitlets.Int(),
+            'bufferSize': traitlets.Int(),
+            'flowControl': traitlets.Unicode()
         }, default_value={
             'baudRate': 9600,
             'dataBits': 8,

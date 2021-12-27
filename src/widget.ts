@@ -65,9 +65,9 @@ export class SerialHubModel extends DOMWidgetModel {
 }
 
 export class SerialHubView extends DOMWidgetView {
-  _el_status: HTMLSpanElement | null = null;
-  _el_stats: HTMLSpanElement | null = null;
-  _el_value: HTMLPreElement | null = null;
+  protected _el_status: HTMLButtonElement | null = null;
+  protected _el_stats: HTMLSpanElement | null = null;
+  protected _el_value: HTMLPreElement | null = null;
   _shp: SerialHubPort | null = null;
 
   render(): this {
@@ -75,7 +75,7 @@ export class SerialHubView extends DOMWidgetView {
     this.el.classList.add('xx-serialhub-widget');
 
     /* Create a couple sub-Elements for our custom widget */
-    this._el_status = window.document.createElement('span');
+    this._el_status = window.document.createElement('button');
     this._el_status.classList.add('xx-serialhub-status');
     this._el_stats = window.document.createElement('span');
     this._el_stats.classList.add('xx-serialhub-stats');
@@ -94,9 +94,9 @@ export class SerialHubView extends DOMWidgetView {
     this.changed_stats();
     this.model.on('change:status', this.changed_status, this);
     this.model.on('change:value', this.changed_value, this);
-    this.model.on('change:pkt_recv_front', this.changed_stats, this);
     this.model.on('change:request_options', this.changed_request_options, this);
     this.model.on('change:serial_options', this.changed_serial_options, this);
+    this.model.on('change:pkt_recv_front', this.changed_stats, this);
     this.model.on('change:pkt_recv_back', this.changed_stats, this);
     this.model.on('change:pkt_send_front', this.changed_stats, this);
     this.model.on('change:pkt_send_back', this.changed_stats, this);

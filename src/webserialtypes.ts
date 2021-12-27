@@ -18,9 +18,10 @@ export interface ISerialOptions {
   parity?: 'none' | 'even' | 'odd';
   stopBits?: number; //ONLY: 1 2
   bufferSize?: number; // >0 (default 255 if unspecified?)
+  flowControl?: 'none' | 'hardware';
 }
 export interface ISerialPortInfo {
-  //It seems that only vendorId & productId typically get set???
+  //Seems only vendorId & productId get set for serial ports???
   serialNumber?: string;
   manufacturer?: string;
   locationId?: number | string;
@@ -56,5 +57,6 @@ export interface ISerial extends EventTarget {
   requestPort: (options?: IRequestOptions) => Promise<ISerialPort>;
 }
 export interface INavigatorSerial extends Navigator {
+  //Casting interface for accessing the ISerial singleton object (if present)
   readonly serial?: ISerial;
 }
