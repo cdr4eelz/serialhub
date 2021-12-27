@@ -25,6 +25,7 @@ jobs:
         set -eux
         jlpm
         jlpm run eslint:check
+        jlpm run build:all
         python -m pip install .
 
         jupyter server extension list 2>&1 | grep -ie "serialhub.*OK" | true

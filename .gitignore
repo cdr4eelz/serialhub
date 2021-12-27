@@ -154,8 +154,8 @@ serialhub/labextension/*.tgz
 
 # Packed lab extensions
 serialhub/labextension
-d1/
-d2/
+_misc/*
+tsconfig.tsbuildinfo
 
 # Backup Files
 *~

@@ -1,9 +1,14 @@
 include LICENSE.txt
 include README.md
+include RELEASE.md
+include CHANGELOG.md
 
-include setupbase.py
+#include setupbase.py
 include pytest.ini
 include .coverage.rc
+include appveyor.yml
+include codecov.yml
+include readthedocs.yml
 
 include tsconfig.json
 include package.json
@@ -25,9 +30,13 @@ graft tests
 prune tests/build
 
 # Javascript files
+#include serialhub/nbextension/*.py
+#include serialhub/nbextension/static/extension.js
 graft serialhub/nbextension
+exclude serialhub/nbextension/static/index.js*
 graft src
 graft css
+graft style
 prune **/node_modules
 prune coverage
 prune lib
@@ -38,3 +47,7 @@ global-exclude *.pyc
 global-exclude *.pyo
 global-exclude .git
 global-exclude .ipynb_checkpoints
+
+#  include *.md
+#  include *.yml
+include _build_notes.txt
