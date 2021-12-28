@@ -187,7 +187,7 @@ export class SerialHubView extends DOMWidgetView {
 
   click_status(this: SerialHubView, ev: MouseEvent): void {
     console.log('click_status', this, this.model, ev);
-    this._shp = SerialHubPort.createHub();
+    this._shp = SerialHubPort.createOneHub();
     //const reqOpts = { filters: [{usbVendorId: 0x2047}] }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
     //const serOpts = { baudRate: 115200 };
     const [reqOpts, serOpts] = this.get_port_options(); //Unpack options to local vars

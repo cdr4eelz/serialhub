@@ -16,10 +16,7 @@ export class SerialHubPort {
   //inputDone: Promise<void> |null;
   protected reader: ReadableStreamDefaultReader | null;
 
-  constructor(oldSP?: SerialHubPort) {
-    if (oldSP) {
-      oldSP.disconnect(); //Dispose of prior "port" if passed to us
-    }
+  constructor() {
     this.port = null;
     this.writer = null;
     this.reader = null;
@@ -47,13 +44,14 @@ export class SerialHubPort {
     if (!rawPort) {
       return; //TODO: Throw exception? The requestPort() probably already threw error
     }
+    console.log('OPENING PORT:', rawPort, rawPort.getInfo());
     this.port = rawPort;
     await this.port.open(serialOpts);
 
     this.writer = this.port.writable.getWriter();
     this.reader = this.port.readable.getReader();
 
-    console.log('CONNECT: ', this);
+    console.log('CONNECTED: ', this, this.port, this.port.getInfo());
     //Let cbConnect initiate this.readLoop(f);
   }
 
@@ -61,19 +59,26 @@ export class SerialHubPort {
     console.log('CLOSE: ', this);
     //TODO: Verify proper closing steps for reader/writer vs the port itself
     try {
+      //await this.port?.readable.cancel('Closing port');
       await this.reader?.cancel();
     } catch (e) {
+      console.error('Ignoring error while closing readable', e);
       //Ignore exception on reader
     } finally {
       this.reader = null;
     }
     try {
+      //await this.port?.writable.abort('Closing port');
+      //await this.writer?.abort('Closing port');
       await this.writer?.close();
     } catch (e) {
+      console.error('Ignoring error while closing writable', e);
       //Ignore exception on writer
     } finally {
       this.writer = null;
     }
+    //Hopefully the above have unlocked the reader/writer of the port???
+    // and allowed the readLoop to fall-through before we close the port.
     try {
       await this.port?.close(); //Let exceptions through from here
     } finally {
@@ -93,6 +98,7 @@ export class SerialHubPort {
 
   async readLoop(cbRead: (theVAL: any) => void): Promise<void> {
     while (this.reader) {
+      //console.log('[readLoop] LOOP');
       const { value, done } = await this.reader.read();
       if (value) {
         //console.log('[readLoop] VALUE', value);
@@ -104,6 +110,7 @@ export class SerialHubPort {
         break;
       }
     }
+    console.log('[readLoop] EXIT');
   }
 
   static isSupported(): boolean {
@@ -118,10 +125,25 @@ export class SerialHubPort {
     return true;
   }
 
-  static createHub(): SerialHubPort {
-    const oldSER = (window as any).serPort;
-    const newSHP = new SerialHubPort(oldSER);
-    (window as any).serPort = newSHP; //Assign to a global location
+  /* createOneHub() is a wrapper around "new SerialHubPort()" which
+      attempts to auto-disconnect a prior port so that re-opening
+      has a chance of succeeding.  Otherwise one tends to get a
+      port already open error.
+  */
+  static createOneHub(): SerialHubPort {
+    const oldSER = (window as any).serPort; //Get prior stashed value
+    if (oldSER) {
+      console.log('Closing left over port', oldSER);
+      try {
+        oldSER.disconnect(); //Dispose of prior "port" if passed to us
+      } catch (e) {
+        console.error('Ignoring close error', e);
+      } finally {
+        (window as any).serPort = null;
+      }
+    }
+    const newSHP = new SerialHubPort();
+    (window as any).serPort = newSHP; //Stash in a global location
     return newSHP;
   }
 }
