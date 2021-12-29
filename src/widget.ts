@@ -66,8 +66,9 @@ export class SerialHubModel extends DOMWidgetModel {
 
 export class SerialHubView extends DOMWidgetView {
   protected _el_status: HTMLButtonElement | null = null;
-  protected _el_stats: HTMLSpanElement | null = null;
+  protected _el_stats: HTMLPreElement | null = null;
   protected _el_value: HTMLPreElement | null = null;
+
   _shp: SerialHubPort | null = null;
 
   render(): this {
@@ -77,7 +78,7 @@ export class SerialHubView extends DOMWidgetView {
     /* Create a couple sub-Elements for our custom widget */
     this._el_status = window.document.createElement('button');
     this._el_status.classList.add('xx-serialhub-status');
-    this._el_stats = window.document.createElement('span');
+    this._el_stats = window.document.createElement('pre');
     this._el_stats.classList.add('xx-serialhub-stats');
     this._el_value = window.document.createElement('pre');
     this._el_value.classList.add('xx-serialhub-value');
@@ -154,10 +155,12 @@ export class SerialHubView extends DOMWidgetView {
   changed_stats(): void {
     if (this._el_stats) {
       let stats = '';
-      stats += ' Rf:' + this.model.get('pkt_recv_front');
-      stats += ' Rb:' + this.model.get('pkt_recv_back');
-      stats += ' Sf:' + this.model.get('pkt_send_front');
-      stats += ' Sb:' + this.model.get('pkt_send_back');
+      stats += ' RecvF:' + this.model.get('pkt_recv_front');
+      stats += ' SendF:' + this.model.get('pkt_send_front');
+      stats += '  (Front-End)\r\n';
+      stats += ' RecvB:' + this.model.get('pkt_recv_back');
+      stats += ' SendB:' + this.model.get('pkt_send_back');
+      stats += '  (Back-End)';
       this._el_stats.textContent = stats;
     }
   }
@@ -196,9 +199,15 @@ export class SerialHubView extends DOMWidgetView {
     //const serOpts = { baudRate: 115200 };
     const [reqOpts, serOpts] = this.get_port_options(); //Unpack options to local vars
     console.log('CONNECT options', reqOpts, serOpts);
-    this._shp.connect(reqOpts, serOpts).then((): void => {
-      this.cb_connect();
-    });
+    this._shp.connect(reqOpts, serOpts).then(
+      (): void => {
+        this.model.set('status', 'Connected');
+        this.cb_connect();
+      },
+      (reason: any): void => {
+        this.model.set('status', 'Disconnected');
+      }
+    );
     console.log('click_status DONE', this._shp);
   }
 
@@ -206,13 +215,6 @@ export class SerialHubView extends DOMWidgetView {
     if (!this || !this.model) {
       return;
     }
-    /*  OLD code just for testing messages...
-    this.model.send({ type: 'text', text: 'VALUE-6\n' }, {}, []);
-    const encoder = new TextEncoder();
-    const theData = encoder.encode('6');
-    this._shp?.writeToStream([theData]);
-    this.model.set('pkt_send_front', this.model.get('pkt_send_front') + 1);
-    */
   }
 
   msg_custom(this: SerialHubView, mData: Dict<any>, mBuffs: DataView[]): void {
@@ -222,13 +224,6 @@ export class SerialHubView extends DOMWidgetView {
       console.log('MSG-SEND', mBuffs);
       if (this._shp) {
         const nWritten: number = this._shp.writeToStream(mBuffs);
-        this.inc_stats_tuple('pkt_send_front', nWritten);
-      }
-    } else if (msgType === 'SEND2') {
-      const encoder = new TextEncoder();
-      const theData = encoder.encode(mData['text']);
-      if (this._shp) {
-        const nWritten: number = this._shp.writeToStream([theData]);
         this.inc_stats_tuple('pkt_send_front', nWritten);
       }
     } else {
