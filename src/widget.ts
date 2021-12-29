@@ -38,11 +38,11 @@ export class SerialHubModel extends DOMWidgetModel {
       status: 'Initializing...',
       value: 'Loading...',
       request_options: {},
-      serial_options: {},
-      pkt_recv_front: 0,
-      pkt_recv_back: 0,
-      pkt_send_front: 0,
-      pkt_send_back: 0
+      serial_options: {}, //Rely initial backend sync with frontend for real default
+      pkt_recv_front: [0, 0],
+      pkt_send_front: [0, 0],
+      pkt_recv_back: [0, 0],
+      pkt_send_back: [0, 0]
     };
   }
 
@@ -162,15 +162,9 @@ export class SerialHubView extends DOMWidgetView {
     }
   }
 
-  protected inc_recv_stats(nBytes: number, nPackets = 1): void {
-    const oPackets: number = this.model.get('pkt_recv_front');
-    this.model.set('pkt_recv_front', oPackets + nPackets);
-    //TODO: Increment byte counter also
-  }
-  protected inc_send_stats(nBytes: number, nPackets = 1): void {
-    const oPackets: number = this.model.get('pkt_send_front');
-    this.model.set('pkt_send_front', oPackets + nPackets);
-    //TODO: Increment byte counter also
+  protected inc_stats_tuple(key: string, nBytes: number, nPackets = 1): void {
+    const [oByt, oPkt] = this.model.get(key);
+    this.model.set(key, [oByt + nBytes, oPkt + nPackets]);
   }
 
   cb_read(this: SerialHubView, value: ArrayBuffer): void {
@@ -183,7 +177,7 @@ export class SerialHubView extends DOMWidgetView {
       throw e; //Rethrow exception
     }
     //Only increment statistics if send() was successful
-    this.inc_recv_stats(value.byteLength);
+    this.inc_stats_tuple('pkt_recv_front', value.byteLength);
   }
 
   cb_connect(this: SerialHubView): void {
@@ -228,14 +222,14 @@ export class SerialHubView extends DOMWidgetView {
       console.log('MSG-SEND', mBuffs);
       if (this._shp) {
         const nWritten: number = this._shp.writeToStream(mBuffs);
-        this.inc_send_stats(nWritten);
+        this.inc_stats_tuple('pkt_send_front', nWritten);
       }
     } else if (msgType === 'SEND2') {
       const encoder = new TextEncoder();
       const theData = encoder.encode(mData['text']);
       if (this._shp) {
         const nWritten: number = this._shp.writeToStream([theData]);
-        this.inc_send_stats(nWritten);
+        this.inc_stats_tuple('pkt_send_front', nWritten);
       }
     } else {
       console.log('UNKNOWN MESSAGE: ', msgType, mData, mBuffs);

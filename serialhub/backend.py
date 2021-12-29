@@ -13,7 +13,8 @@ from typing import Sequence, Mapping, Any, ByteString, Optional, NoReturn #, Bin
 import io #, binascii
 
 import ipywidgets #from ipywidgets import DOMWidget, register
-import traitlets #from traitlets import Unicode, Int, Bool, Complex, Enum
+import traitlets
+#from traitlets.traitlets import Integer #from traitlets import Unicode, Int, Bool, Complex, Enum
 from ._frontend import module_name, module_version
 
 @ipywidgets.register
@@ -51,10 +52,22 @@ class SerialHubWidget(ipywidgets.DOMWidget):
             'parity': 'none',
             'stopBits': 1
     }).tag(sync=True)
-    pkt_recv_front = traitlets.Int(default_value=0, read_only=True).tag(sync=True)
-    pkt_recv_back = traitlets.Int(default_value=0).tag(sync=True)
-    pkt_send_front = traitlets.Int(default_value=0, read_only=True).tag(sync=True)
-    pkt_send_back = traitlets.Int(default_value=0).tag(sync=True)
+    pkt_recv_front = traitlets.Tuple(
+        traitlets.Int(), traitlets.Int(),
+        default_value=(0, 0), read_only=True
+    ).tag(sync=True)
+    pkt_send_front = traitlets.Tuple(
+        traitlets.Int(), traitlets.Int(),
+        default_value=(0, 0), read_only=True
+    ).tag(sync=True)
+    pkt_recv_back = traitlets.Tuple(
+        traitlets.Int(), traitlets.Int(),
+        default_value=(0, 0)
+    ).tag(sync=True)
+    pkt_send_back = traitlets.Tuple(
+        traitlets.Int(), traitlets.Int(),
+        default_value=(0, 0)
+    ).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         #TODO: Allow request & serial options to be passed at construction
@@ -69,8 +82,9 @@ class SerialHubWidget(ipywidgets.DOMWidget):
         """Receives custom message callbacks from the frontend client."""
         msgtype = str(content['type'])
         if msgtype == 'RECV':
-            self.pkt_recv_back += 1
             for buf in buffers:
+                (o_byt, o_pkt) = self.pkt_recv_back
+                self.pkt_recv_back = (o_byt + len(buf), o_pkt + 1)
                 #decoded: str = buf.hex()
                 #decoded: str = str(binascii.b2a_hex(buf))
                 #decoded: str = buf.decode('ascii','ignore')
@@ -96,7 +110,8 @@ class SerialHubWidget(ipywidgets.DOMWidget):
           "data" is a single bytestring to be output by client to the serialport
         """
         self.send_custom({'type': 'SEND'}, [data])
-        self.pkt_send_back += 1
+        (o_byt, o_pkt) = self.pkt_send_back
+        self.pkt_send_back = (o_byt + len(data), o_pkt + 1)
 
     def write_str(self,
                 data: str,

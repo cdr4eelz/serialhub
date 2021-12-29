@@ -88,15 +88,18 @@ export class SerialHubPort {
 
   writeToStream(data: ArrayBufferView[] | ArrayBuffer[]): number {
     if (!this.writer) {
-      return 0; //TODO: Throw some appropriate exception instead
+      throw new TypeError('Stream not open');
     }
-    let nWritten = 0;
     data.forEach(async (d: ArrayBufferView | ArrayBuffer) => {
       //Anonymous function is ASYNC so it can AWAIT the write() call below
-      console.log('[WRITE]', d);
+      console.log('[WRITE]', d, d.byteLength);
       await this.writer?.write(d); // AWAIT in sequence, to avoid parallel promises
-      nWritten += d.byteLength;
     });
+    let nWritten = 0;
+    for (const d of data) {
+      nWritten += d.byteLength; //TODO: Research if offset needs to be considered???
+    }
+    console.log('[WROTE]', nWritten);
     return nWritten;
   }
 
