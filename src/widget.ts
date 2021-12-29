@@ -92,6 +92,7 @@ export class SerialHubView extends DOMWidgetView {
     this.changed_status();
     this.changed_value();
     this.changed_stats();
+    this.update_stats_title();
     this.model.on('change:status', this.changed_status, this);
     this.model.on('change:value', this.changed_value, this);
     this.model.on('change:request_options', this.changed_request_options, this);
@@ -103,11 +104,10 @@ export class SerialHubView extends DOMWidgetView {
 
     this.model.on('msg:custom', this.msg_custom, this);
 
-    this.model.set('is_supported', SerialHubPort.isSupported());
-    this.model.set(
-      'status',
-      SerialHubPort.isSupported() ? 'Supported' : 'Unsupported'
-    );
+    const supported: boolean = SerialHubPort.isSupported();
+    this.model.set('is_supported', supported);
+    this.model.set('status', supported ? 'Supported' : 'Unsupported');
+
     this.touch();
     return this;
   }
@@ -162,18 +162,28 @@ export class SerialHubView extends DOMWidgetView {
     }
   }
 
+  protected inc_recv_stats(nBytes: number, nPackets = 1): void {
+    const oPackets: number = this.model.get('pkt_recv_front');
+    this.model.set('pkt_recv_front', oPackets + nPackets);
+    //TODO: Increment byte counter also
+  }
+  protected inc_send_stats(nBytes: number, nPackets = 1): void {
+    const oPackets: number = this.model.get('pkt_send_front');
+    this.model.set('pkt_send_front', oPackets + nPackets);
+    //TODO: Increment byte counter also
+  }
+
   cb_read(this: SerialHubView, value: ArrayBuffer): void {
-    console.log('DATA-IN', value);
+    //console.log('DATA-IN', value);
     try {
       this.model.send({ type: 'RECV' }, {}, [value]);
     } catch (e) {
-      console.log('Failed to send serial data to backend.', e);
+      console.log('FAILED send of serial data to backend.', e);
       //TODO: Shutdown the reader & connection on fatal errors
       throw e; //Rethrow exception
     }
     //Only increment statistics if send() was successful
-    const cnt: number = this.model.get('pkt_recv_front') + 1;
-    this.model.set('pkt_recv_front', cnt);
+    this.inc_recv_stats(value.byteLength);
   }
 
   cb_connect(this: SerialHubView): void {
@@ -191,22 +201,24 @@ export class SerialHubView extends DOMWidgetView {
     //const reqOpts = { filters: [{usbVendorId: 0x2047}] }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
     //const serOpts = { baudRate: 115200 };
     const [reqOpts, serOpts] = this.get_port_options(); //Unpack options to local vars
-    console.log('Connect with options...', reqOpts, serOpts);
+    console.log('CONNECT options', reqOpts, serOpts);
     this._shp.connect(reqOpts, serOpts).then((): void => {
       this.cb_connect();
     });
-    console.log('DONE click', this._shp);
+    console.log('click_status DONE', this._shp);
   }
 
   click_value(this: SerialHubView, ev: MouseEvent): void {
     if (!this || !this.model) {
       return;
     }
+    /*  OLD code just for testing messages...
     this.model.send({ type: 'text', text: 'VALUE-6\n' }, {}, []);
     const encoder = new TextEncoder();
     const theData = encoder.encode('6');
     this._shp?.writeToStream([theData]);
     this.model.set('pkt_send_front', this.model.get('pkt_send_front') + 1);
+    */
   }
 
   msg_custom(this: SerialHubView, mData: Dict<any>, mBuffs: DataView[]): void {
@@ -214,13 +226,17 @@ export class SerialHubView extends DOMWidgetView {
     const msgType = mData['type'];
     if (msgType === 'SEND') {
       console.log('MSG-SEND', mBuffs);
-      this._shp?.writeToStream(mBuffs);
-      this.model.set('pkt_send_front', this.model.get('pkt_send_front') + 1);
+      if (this._shp) {
+        const nWritten: number = this._shp.writeToStream(mBuffs);
+        this.inc_send_stats(nWritten);
+      }
     } else if (msgType === 'SEND2') {
       const encoder = new TextEncoder();
       const theData = encoder.encode(mData['text']);
-      this._shp?.writeToStream([theData]);
-      this.model.set('pkt_send_front', this.model.get('pkt_send_front') + 1);
+      if (this._shp) {
+        const nWritten: number = this._shp.writeToStream([theData]);
+        this.inc_send_stats(nWritten);
+      }
     } else {
       console.log('UNKNOWN MESSAGE: ', msgType, mData, mBuffs);
     }

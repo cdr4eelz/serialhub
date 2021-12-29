@@ -86,14 +86,18 @@ export class SerialHubPort {
     }
   }
 
-  writeToStream(data: ArrayBufferView[] | ArrayBuffer[]): void {
-    if (this.writer) {
-      data.forEach(async (d: any) => {
-        //Anonymous function is ASYNC so it can AWAIT the write() call below
-        console.log('[WRITE]', d);
-        await this.writer?.write(d); // AWAIT in sequence, to avoid parallel promises
-      });
+  writeToStream(data: ArrayBufferView[] | ArrayBuffer[]): number {
+    if (!this.writer) {
+      return 0; //TODO: Throw some appropriate exception instead
     }
+    let nWritten = 0;
+    data.forEach(async (d: ArrayBufferView | ArrayBuffer) => {
+      //Anonymous function is ASYNC so it can AWAIT the write() call below
+      console.log('[WRITE]', d);
+      await this.writer?.write(d); // AWAIT in sequence, to avoid parallel promises
+      nWritten += d.byteLength;
+    });
+    return nWritten;
   }
 
   async readLoop(cbRead: (theVAL: any) => void): Promise<void> {
