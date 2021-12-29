@@ -22,32 +22,28 @@ export class SerialHubPort {
     this.reader = null;
   }
 
+  /* connect the SerialHubPort by requesting and then opening a Web Serial port */
   async connect(
     requestOpts: IRequestOptions,
     serialOpts: ISerialOptions
   ): Promise<void> {
     const NAV: INavigatorSerial = window.navigator as INavigatorSerial;
     if (!NAV || !NAV.serial) {
-      return;
+      throw new TypeError('Web Serial API not supported');
     }
     if (this.port) {
-      //Implies potentially "connected" status if this.port is set
-      try {
-        await this.disconnect();
-      } catch (e) {
-        console.log('Ignoring exception', e);
-      } finally {
-        this.port = null; //Ensure it is null before proceeding
-      }
+      throw new TypeError('WebSerial port is already connected');
     }
     const rawPort = await NAV.serial.requestPort(requestOpts);
     if (!rawPort) {
-      return; //TODO: Throw exception? The requestPort() probably already threw error
+      //The requestPort() probably threw error, but in case not...
+      throw new TypeError('FAILED request a port from user');
     }
     console.log('OPENING PORT:', rawPort, rawPort.getInfo());
     this.port = rawPort;
     await this.port.open(serialOpts);
 
+    //Note that getReader & getWriter "lock" the port to the reader
     this.writer = this.port.writable.getWriter();
     this.reader = this.port.readable.getReader();
 
@@ -55,12 +51,14 @@ export class SerialHubPort {
     //Let cbConnect initiate this.readLoop(f);
   }
 
+  /* disconnect the SerialHubPort by closing the associated Web Serial port */
   async disconnect(): Promise<void> {
     console.log('CLOSE: ', this);
     //TODO: Verify proper closing steps for reader/writer vs the port itself
+    // Helpful hints about closing https://wicg.github.io/serial/#close-method
     try {
       //await this.port?.readable.cancel('Closing port');
-      await this.reader?.cancel();
+      await this.reader?.cancel('Closing port'); //Should indirectly signal readLoop to terminate
     } catch (e) {
       console.error('Ignoring error while closing readable', e);
       //Ignore exception on reader
@@ -69,7 +67,6 @@ export class SerialHubPort {
     }
     try {
       //await this.port?.writable.abort('Closing port');
-      //await this.writer?.abort('Closing port');
       await this.writer?.close();
     } catch (e) {
       console.error('Ignoring error while closing writable', e);
@@ -86,6 +83,7 @@ export class SerialHubPort {
     }
   }
 
+  /* writeToStream writes and awaits multiple buffers to the serial port */
   writeToStream(data: ArrayBufferView[] | ArrayBuffer[]): number {
     if (!this.writer) {
       throw new TypeError('Stream not open');
@@ -103,6 +101,7 @@ export class SerialHubPort {
     return nWritten;
   }
 
+  /* readLoop to be called back to by Web Serial API as data is read from the serial port */
   async readLoop(cbRead: (theVAL: any) => void): Promise<void> {
     while (this.reader) {
       //console.log('[readLoop] LOOP');
@@ -120,7 +119,10 @@ export class SerialHubPort {
     console.log('[readLoop] EXIT');
   }
 
+  /* Static function to check if browser supports Web Serial API */
   static isSupported(): boolean {
+    return 'serial' in navigator;
+    /*
     const NAV: Navigator = window.navigator;
     if (NAV === undefined || NAV === null) {
       return false;
@@ -130,6 +132,7 @@ export class SerialHubPort {
       return false;
     }
     return true;
+    */
   }
 
   /* createOneHub() is a wrapper around "new SerialHubPort()" which
