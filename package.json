@@ -1,7 +1,7 @@
 {
   "name": "serialhub",
-  "version": "0.0.31",
-  "description": "WebSerial widget for Jupyter Hub/Lab",
+  "version": "0.0.32",
+  "description": "WebSerial widget for JupyterLab",
   "keywords": [
     "jupyter",
     "jupyterlab",
@@ -36,9 +36,9 @@
     "build:labextension:dev": "jupyter labextension build --development True .",
     "build:lib": "tsc",
     "build:nbextension": "webpack --node-env production",
+    "build:all": "jlpm run build:lib && jlpm run build:labextension:dev && jlpm run build:nbextension",
     "webpack:help": "webpack --help",
     "webpack:version": "webpack -v",
-    "build:all": "jlpm run build:lib && jlpm run build:labextension:dev && jlpm run build:nbextension",
     "clean": "jlpm run clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
     "clean:labextension": "rimraf serialhub/labextension",
