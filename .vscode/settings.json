@@ -28,5 +28,6 @@
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
     "eslint.alwaysShowStatus": true,
-    "python.defaultInterpreterPath": "/opt/conda/envs/jupyterlab/bin/python"
+    "python.defaultInterpreterPath": "/opt/conda/envs/jupyterlab/bin/python",
+    "python.pythonPath": "/opt/conda/envs/jupyterlab/bin/python"
 }

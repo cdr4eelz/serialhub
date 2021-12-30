@@ -1,0 +1,6 @@
+set -ex
+
+python -m pip install -e .
+jupyter labextension develop . --overwrite
+jupyter labextension list
+
