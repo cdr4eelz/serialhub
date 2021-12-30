@@ -1,5 +1,10 @@
 #!/bin/bash -eux
-  
+
+exit 0
+
+conda install python==3.7.10 jupyterlab==3.1.1 jupyterlab_widgets==1.0.0 jupyterlab_server==2.6.1 jupyter_client==6.1.12  nodejs==14.17.1 ipython==7.26.0 ipykernel==5.5.5 ipywidgets==7.6.3 traitlets==5.0.5 widgetsnbextension==3.5.1 notebook==6.3.0    typing typing_extensions==3.10.0.0   pip setuptools jupyter-packaging build twine pylint pytest
+
+
 cd ~/labtests/serialhub/
 
 jlpm  &&  jlpm build

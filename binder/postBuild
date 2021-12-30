@@ -1,3 +1,5 @@
+#!/bin/bash
+
 set -ex
 
 jlpm
@@ -11,3 +13,4 @@ jupyter labextension list
 jupyter nbextension install --py --symlink --sys-prefix serialhub || true
 jupyter nbextension enable --py --sys-prefix serialhub || true
 jupyter nbextension list
+
