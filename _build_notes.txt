@@ -21,3 +21,7 @@ jupyter lab  build  --dev-build=False --minimize=False --debug
 
 jupyter labextension list
 
+
+jupyter nbextension install --py --symlink --sys-prefix serialhub || true
+jupyter nbextension enable --py --sys-prefix serialhub || true
+jupyter nbextension list

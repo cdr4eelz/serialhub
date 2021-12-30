@@ -39,6 +39,9 @@ export class SerialHubPort {
       //The requestPort() probably threw error, but in case not...
       throw new TypeError('FAILED request a port from user');
     }
+
+    //TODO: Install an this.ondisconnect(event) handler to rawPort
+
     console.log('OPENING PORT:', rawPort, rawPort.getInfo());
     this.port = rawPort;
     await this.port.open(serialOpts);
@@ -57,7 +60,7 @@ export class SerialHubPort {
     //TODO: Verify proper closing steps for reader/writer vs the port itself
     // Helpful hints about closing https://wicg.github.io/serial/#close-method
     try {
-      //await this.port?.readable.cancel('Closing port');
+      //await this.port?.readable?.cancel('Closing port');
       await this.reader?.cancel('Closing port'); //Should indirectly signal readLoop to terminate
     } catch (e) {
       console.error('Ignoring error while closing readable', e);
@@ -66,7 +69,7 @@ export class SerialHubPort {
       this.reader = null;
     }
     try {
-      //await this.port?.writable.abort('Closing port');
+      //await this.port?.writable?.abort('Closing port');
       //await this.writer?.abort('Closing port');
       await this.writer?.close();
     } catch (e) {
@@ -106,6 +109,7 @@ export class SerialHubPort {
   async readLoop(cbRead: (theVAL: Uint8Array) => void): Promise<void> {
     //Possibly "SerialPort.readable" goes null if disconnected?
     while (this.reader && this.port?.readable) {
+      //TODO: Inner loop for non-fatal errors & re-allocate local reader
       //console.log('[readLoop] LOOP');
       const { value, done } = await this.reader.read();
       if (value) {

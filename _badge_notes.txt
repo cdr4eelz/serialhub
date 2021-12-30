@@ -6,3 +6,5 @@
 
 [![Build Widget](https://github.com/cdr4eelz/serialhub/actions/workflows/build-widget.yml/badge.svg)](https://github.com/cdr4eelz/serialhub/actions/workflows/build-widget.yml)
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cdr4eelz/serialhub/master?labpath=examples%2Fintroduction.ipynb)
+
