@@ -12,9 +12,9 @@ import {
 export class SerialHubPort {
   port: ISerialPort | null;
   //outputDone: Promise<void> | null;
-  protected writer: WritableStreamDefaultWriter | null;
+  protected writer: WritableStreamDefaultWriter<any> | null;
   //inputDone: Promise<void> |null;
-  protected reader: ReadableStreamDefaultReader | null;
+  protected reader: ReadableStreamDefaultReader<Uint8Array> | null;
 
   constructor() {
     this.port = null;
@@ -67,6 +67,7 @@ export class SerialHubPort {
     }
     try {
       //await this.port?.writable.abort('Closing port');
+      //await this.writer?.abort('Closing port');
       await this.writer?.close();
     } catch (e) {
       console.error('Ignoring error while closing writable', e);
@@ -91,19 +92,20 @@ export class SerialHubPort {
     data.forEach(async (d: ArrayBufferView | ArrayBuffer) => {
       //Anonymous function is ASYNC so it can AWAIT the write() call below
       console.log('[WRITE]', d, d.byteLength);
-      await this.writer?.write(d); // AWAIT in sequence, to avoid parallel promises
+      await this.writer?.write(d); //AWAIT in sequence, to avoid parallel promises
     });
     let nWritten = 0;
     for (const d of data) {
-      nWritten += d.byteLength; //TODO: Research if offset needs to be considered???
+      nWritten += d.byteLength; //TODO: What about offsets in ArrayBufferView???
     }
     console.log('[WROTE]', nWritten);
     return nWritten;
   }
 
   /* readLoop to be called back to by Web Serial API as data is read from the serial port */
-  async readLoop(cbRead: (theVAL: any) => void): Promise<void> {
-    while (this.reader) {
+  async readLoop(cbRead: (theVAL: Uint8Array) => void): Promise<void> {
+    //Possibly "SerialPort.readable" goes null if disconnected?
+    while (this.reader && this.port?.readable) {
       //console.log('[readLoop] LOOP');
       const { value, done } = await this.reader.read();
       if (value) {

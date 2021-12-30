@@ -29,44 +29,64 @@ class SerialHubWidget(ipywidgets.DOMWidget):
     _view_module = traitlets.Unicode(module_name).tag(sync=True)
     _view_module_version = traitlets.Unicode(module_version).tag(sync=True)
 
-    is_supported = traitlets.Bool(allow_none=True, read_only=True).tag(sync=True)
-    #TODO: Use Enum and traitlets.UseEnum() to constrain "status" values???
-    status = traitlets.Unicode(default_value='Checking...').tag(sync=True)
-    value = traitlets.Unicode(default_value='').tag(sync=True)
-    request_options = traitlets.Dict(per_key_traits={
+    #is_supported starts as None, then is set by the JavaScript front-end upon load
+    is_supported = traitlets.Bool(
+        allow_none=True,
+        read_only=True,
+        help='is_supported is set by frontend to True if the browser supports Web Serial API'
+    ).tag(sync=True)
+    status = traitlets.Unicode( #TODO: Consider an Enum or UseEnum approach???
+        default_value='Checking...',
+        help='status of the widget frontend regarding serial port'
+    ).tag(sync=True)
+    value = traitlets.Unicode(
+        default_value='',
+        help='value for debug feedback messages'
+    ).tag(sync=True)
+    request_options = traitlets.Dict(
+        per_key_traits={
             'filters': traitlets.List(trait=traitlets.Dict())
         }, default_value={
             'filters': []
-    }).tag(sync=True)
+        }, help='request_options to filter serial port list by vendor:product codes'
+    ).tag(sync=True)
     serial_options = traitlets.Dict(
         per_key_traits={
             'baudRate': traitlets.Int(),
-            'dataBits': traitlets.Int(),
-            'parity': traitlets.Unicode(),
-            'stopBits': traitlets.Int(),
-            'bufferSize': traitlets.Int(),
-            'flowControl': traitlets.Unicode()
+            'dataBits': traitlets.Int(), #7 | 8
+            'parity': traitlets.Unicode(), #'none' | 'even' | 'odd' (Use Enum???)
+            'stopBits': traitlets.Int(), #1 | 2
+            'bufferSize': traitlets.Int(), #default 255
+            'flowControl': traitlets.Unicode() #'none' | 'hardware'
         }, default_value={
             'baudRate': 9600,
             'dataBits': 8,
             'parity': 'none',
             'stopBits': 1
-    }).tag(sync=True)
+        }, help='serial_options to apply when opening serial port'
+    ).tag(sync=True)
+    #TODO: Optionally turn off 'sync' attribute for statistics
     pkt_recv_front = traitlets.Tuple(
         traitlets.Int(), traitlets.Int(),
-        default_value=(0, 0), read_only=True
+        default_value=(0, 0),
+        read_only=True,
+        help='[pkts,bytes] received by frontend JS reader'
     ).tag(sync=True)
     pkt_send_front = traitlets.Tuple(
         traitlets.Int(), traitlets.Int(),
-        default_value=(0, 0), read_only=True
+        default_value=(0, 0),
+        read_only=True,
+        help='[pkts,bytes] sent to serial port by frontend'
     ).tag(sync=True)
     pkt_recv_back = traitlets.Tuple(
         traitlets.Int(), traitlets.Int(),
-        default_value=(0, 0)
+        default_value=(0, 0),
+        help='[pkts,bytes] received from trontend by backend callback'
     ).tag(sync=True)
     pkt_send_back = traitlets.Tuple(
         traitlets.Int(), traitlets.Int(),
-        default_value=(0, 0)
+        default_value=(0, 0),
+        help='[pkts,bytes] sent by backend to frontend'
     ).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
@@ -85,12 +105,16 @@ class SerialHubWidget(ipywidgets.DOMWidget):
             for buf in buffers:
                 (o_byt, o_pkt) = self.pkt_recv_back
                 self.pkt_recv_back = (o_byt + len(buf), o_pkt + 1)
-                #decoded: str = buf.hex()
-                #decoded: str = str(binascii.b2a_hex(buf))
-                #decoded: str = buf.decode('ascii','ignore')
+                # buf.hex() ; str(binascii.b2a_hex(buf)) ; buf.decode('ascii','ignore')
                 decoded: str = str(buf, encoding='ascii', errors='ignore')
                 self.value += decoded.replace("\n", "\\n").replace("\r", "\\r")
-        elif msgtype == 'text': #Leftover test message
+        elif msgtype == 'SENT': #Acknowledge data sent by client
+            (f_byt, f_pkt) = content['stat_client'] #Update backend stats
+            self.pkt_send_front = (f_byt, f_pkt)
+        elif msgtype == 'RSTS': #Reset backend statistics
+            self.pkt_recv_back = (0, 0)
+            self.pkt_send_back = (0, 0)
+        elif msgtype == 'MSGV': #Append to "value" from client
             self.value += content['text']
 
     def send_custom(self,

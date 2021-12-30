@@ -72,6 +72,7 @@ export class SerialHubView extends DOMWidgetView {
   _shp: SerialHubPort | null = null;
 
   render(): this {
+    console.log('RENDER serialhub widget');
     this.el.id = this.id || UUID.uuid4();
     this.el.classList.add('xx-serialhub-widget');
 
@@ -87,7 +88,7 @@ export class SerialHubView extends DOMWidgetView {
     this._el_status.onclick = (ev: MouseEvent) => this.click_status(ev);
     this._el_value.onclick = (ev: MouseEvent) => this.click_value(ev);
 
-    /* Maybe is more appropriate append() function availablie? */
+    /* Append each of the sub-components to our main widget Element */
     this.el.append(this._el_status, this._el_stats, this._el_value);
 
     this.changed_status();
@@ -165,36 +166,51 @@ export class SerialHubView extends DOMWidgetView {
     }
   }
 
-  protected inc_stats_tuple(key: string, nBytes: number, nPackets = 1): void {
+  /* stats_zero set all frontend & backend stats to 0 */
+  protected stats_zero(): void {
+    this.model.set('pkt_recv_front', [0, 0]);
+    this.model.set('pkt_send_front', [0, 0]);
+    //this.model.send({ type: 'RSTS' }, {}); //Send message to reset backend stats
+    this.model.set('pkt_recv_back', [0, 0]);
+    this.model.set('pkt_send_back', [0, 0]);
+    this.touch();
+  }
+  protected stats_inc_tuple(
+    key: string,
+    nBytes: number,
+    nPackets = 1
+  ): [number, number] {
     const [oByt, oPkt] = this.model.get(key);
-    this.model.set(key, [oByt + nBytes, oPkt + nPackets]);
+    const nStats: [number, number] = [oByt + nBytes, oPkt + nPackets];
+    this.model.set(key, nStats);
+    this.touch();
+    return nStats;
   }
 
-  cb_read(this: SerialHubView, value: ArrayBuffer): void {
-    //console.log('DATA-IN', value);
+  cb_read(this: SerialHubView, value: Uint8Array): void {
+    console.log('DATA-IN', value.length, value);
+    const nStat = this.stats_inc_tuple('pkt_recv_front', value.length);
     try {
-      this.model.send({ type: 'RECV' }, {}, [value]);
+      this.model.send({ type: 'RECV', pkt_recv_front: nStat }, {}, [value]);
     } catch (e) {
       console.log('FAILED send of serial data to backend.', e);
       //TODO: Shutdown the reader & connection on fatal errors
       throw e; //Rethrow exception
     }
-    //Only increment statistics if send() was successful
-    this.inc_stats_tuple('pkt_recv_front', value.byteLength);
   }
 
   cb_connect(this: SerialHubView): void {
     console.log('cb_connect', this._shp);
     this.update_stats_title(); //Update serialPortInfo since we connected
-    this._shp?.readLoop((value: any) => {
+    this.stats_zero(); //Reset statistics on fresh connection
+    this._shp?.readLoop((value: Uint8Array) => {
       this.cb_read(value);
     });
     console.log('DONE cb_connect');
   }
 
-  click_status(this: SerialHubView, ev: MouseEvent): void {
-    console.log('click_status', this, this.model, ev);
-    this._shp = SerialHubPort.createOneHub();
+  widget_connect(): void {
+    this._shp = new SerialHubPort(); //was SerialHubPort.createOneHub();
     //const reqOpts = { filters: [{usbVendorId: 0x2047}] }; // TI proper ; unused 0x0451 for "TUSB2046 Hub"
     //const serOpts = { baudRate: 115200 };
     const [reqOpts, serOpts] = this.get_port_options(); //Unpack options to local vars
@@ -206,8 +222,29 @@ export class SerialHubView extends DOMWidgetView {
       },
       (reason: any): void => {
         this.model.set('status', 'Disconnected');
+        this._shp = null;
       }
     );
+  }
+  widget_disconnect(): void {
+    console.log('DISconnect', this, this._shp);
+    this._shp?.disconnect().then(
+      (): void => {
+        this.model.set('status', 'Disconnected');
+        this._shp = null;
+      },
+      (reason: any): void => {
+        this.model.set('status', 'Stuck');
+      }
+    );
+  }
+  click_status(this: SerialHubView, ev: MouseEvent): void {
+    console.log('click_status', this, this.model, ev);
+    if (this._shp) {
+      this.widget_disconnect();
+    } else {
+      this.widget_connect();
+    }
     console.log('click_status DONE', this._shp);
   }
 
@@ -224,7 +261,7 @@ export class SerialHubView extends DOMWidgetView {
       console.log('MSG-SEND', mBuffs);
       if (this._shp) {
         const nWritten: number = this._shp.writeToStream(mBuffs);
-        this.inc_stats_tuple('pkt_send_front', nWritten);
+        this.stats_inc_tuple('pkt_send_front', nWritten);
       }
     } else {
       console.log('UNKNOWN MESSAGE: ', msgType, mData, mBuffs);

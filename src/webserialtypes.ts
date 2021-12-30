@@ -43,8 +43,8 @@ export interface ISerialPort {
   //Acquire ISerialPort objects via ISerial.requestPort() or .getPorts()
   open: (options?: ISerialOptions) => Promise<void>;
   close: () => Promise<void>;
-  readonly readable: ReadableStream; //AKA: "in"
-  readonly writable: WritableStream; //AKA: "out"
+  readonly readable: ReadableStream<Uint8Array>; //AKA: "in"
+  readonly writable: WritableStream<any>; //AKA: "out"
   getSignals: () => Promise<IInputSignals>;
   setSignals: (signals: IOutputSignals) => Promise<void>;
   getInfo: () => ISerialPortInfo;
