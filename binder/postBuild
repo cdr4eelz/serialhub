@@ -1,6 +1,13 @@
 set -ex
 
+jlpm
+jlpm build:all
+
 python -m pip install -e .
+
 jupyter labextension develop . --overwrite
 jupyter labextension list
 
+jupyter nbextension install --py --symlink --sys-prefix serialhub || true
+jupyter nbextension enable --py --sys-prefix serialhub || true
+jupyter nbextension list
