@@ -24,6 +24,7 @@ prune docs/dist
 
 # Examples
 graft examples
+prune examples/.ipynb_checkpoints
 
 # Tests
 graft tests
@@ -50,5 +51,4 @@ global-exclude .ipynb_checkpoints
 
 #  include *.md
 #  include *.yml
-include _build_notes.txt
-include _badge_notes.txt
+graft devnotes
