@@ -89,10 +89,25 @@ class SerialHubWidget(ipywidgets.DOMWidget):
         help='[pkts,bytes] sent by backend to frontend'
     ).tag(sync=True)
 
+    _cb_recv = None
+
     def __init__(self, *args, **kwargs):
         #TODO: Allow request & serial options to be passed at construction
         ipywidgets.DOMWidget.__init__(self, *args, **kwargs)
         self.on_msg(self.msg_custom)
+
+    def on_recv(self, cb_recv):
+        """Set callback for received buffers of serial data"""
+        self._cb_recv = cb_recv
+
+    def do_recv(self, buf: ByteString):
+        """A buffer arrived, handle it."""
+        if self._cb_recv:
+            self._cb_recv(buf)
+        else:
+            # buf.hex() ; str(binascii.b2a_hex(buf)) ; buf.decode('ascii','ignore')
+            decoded: str = str(buf, encoding='ascii', errors='ignore')
+            self.value += decoded.replace("\n", "\\n").replace("\r", "\\r")
 
     def msg_custom(self,
                 widget: ipywidgets.DOMWidget,  #pylint: disable=unused-argument
@@ -105,9 +120,7 @@ class SerialHubWidget(ipywidgets.DOMWidget):
             for buf in buffers:
                 (o_byt, o_pkt) = self.pkt_recv_back
                 self.pkt_recv_back = (o_byt + len(buf), o_pkt + 1)
-                # buf.hex() ; str(binascii.b2a_hex(buf)) ; buf.decode('ascii','ignore')
-                decoded: str = str(buf, encoding='ascii', errors='ignore')
-                self.value += decoded.replace("\n", "\\n").replace("\r", "\\r")
+                self.do_recv(buf)
         elif msgtype == 'SENT': #Acknowledge data sent by client
             (f_byt, f_pkt) = content['stat_client'] #Update backend stats
             self.pkt_send_front = (f_byt, f_pkt)
@@ -148,20 +161,17 @@ class SerialHubWidget(ipywidgets.DOMWidget):
         """
         self.write_bytes(data.encode(encoding=enc, errors=errs))
 
-    def new_serial(self) -> io.RawIOBase:
-        """Return a SerialIO attached to this SerialHubWidget."""
-        return SerialIO(self)
-
 
 #BinaryIO(IO[bytes])
 class SerialIO(io.RawIOBase):
     """Serial IO proxied to frontend browser serial"""
 
-    widget: SerialHubWidget = None
+    widget: SerialHubWidget
 
     def __init__(self, widget: SerialHubWidget): #, *args, **kwargs):
         io.RawIOBase.__init__(self)
         self.widget = widget
+        #TODO: Register callback
 
     def readable(self) -> bool:
         return True
