@@ -148,10 +148,17 @@ class SerialHubWidget(ipywidgets.DOMWidget):
         """
         self.write_bytes(data.encode(encoding=enc, errors=errs))
 
+    def new_serial(self) -> io.RawIOBase:
+        """Return a SerialIO attached to this SerialHubWidget."""
+        return SerialIO(self)
+
 
 #BinaryIO(IO[bytes])
-class Serial(io.RawIOBase):
+class SerialIO(io.RawIOBase):
     """Serial IO proxied to frontend browser serial"""
+
+    widget: SerialHubWidget = None
+
     def __init__(self, widget: SerialHubWidget): #, *args, **kwargs):
         io.RawIOBase.__init__(self)
         self.widget = widget
@@ -167,7 +174,7 @@ class Serial(io.RawIOBase):
 
     def closed(self) -> bool:
         """Currently True only if widget reports unsupported"""
-        return self.widget.is_supported
+        return not self.widget.is_supported
 
     def write(self, data: bytes) -> Optional[int]:
         if self.closed():
