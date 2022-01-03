@@ -1,6 +1,10 @@
 # Copyright (c) cdr4eelz.
 # Distributed under the terms of the Modified BSD License.
 
+"""\
+Python backend module for SerialHub Widget
+"""
+
 import json
 from pathlib import Path
 
