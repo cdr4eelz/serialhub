@@ -10,10 +10,10 @@ import setuptools
 HERE = Path(__file__).parent.resolve()
 
 # The name of the project
-name = "serialhub"
+NAME = "serialhub"
 
-nb_path = (HERE / name.replace("-", "_") / "nbextension" / "static")
-lab_path = (HERE / name.replace("-", "_") / "labextension")
+nb_path = (HERE / NAME.replace("-", "_") / "nbextension" / "static")
+lab_path = (HERE / NAME.replace("-", "_") / "labextension")
 
 # Representative files that should exist after a successful build
 ensured_targets = [
@@ -21,13 +21,13 @@ ensured_targets = [
     str(lab_path / "static/style.js")
 ]
 
-labext_name = "serialhub"
+LABEXT_NAME = "serialhub"
 
 data_files_spec = [
     ('share/jupyter/nbextensions/serialhub', nb_path, '*.js*'),
     ('etc/jupyter/nbconfig/notebook.d', str("."), 'serialhub.json'),
-    ("share/jupyter/labextensions/%s" % labext_name, str(lab_path.relative_to(HERE)), "**"),
-    ("share/jupyter/labextensions/%s" % labext_name, str("."), "install.json"),
+    ("share/jupyter/labextensions/%s" % LABEXT_NAME, str(lab_path.relative_to(HERE)), "**"),
+    ("share/jupyter/labextensions/%s" % LABEXT_NAME, str("."), "install.json"),
     ("etc/jupyter/jupyter_server_config.d",
      "jupyter-config/server-config", "serialhub.json"),
     # For backward compatibility with notebook server
@@ -35,7 +35,7 @@ data_files_spec = [
      "jupyter-config/nb-config", "serialhub.json"),
 ]
 
-long_description = (HERE / "README.md").read_text()
+long_description = (HERE / "README.md").read_text('UTF-8')
 
 # Get the package info from package.json
 pkg_json = json.loads((HERE / "package.json").read_bytes())
@@ -44,10 +44,10 @@ version = (
     .replace("-alpha.", "a")
     .replace("-beta.", "b")
     .replace("-rc.", "rc")
-) 
+)
 
 setup_args = dict(
-    name=name,
+    name=NAME,
     version=version,
     url=pkg_json["homepage"],
     author=pkg_json["author"]["name"],
@@ -64,14 +64,13 @@ setup_args = dict(
     ],
     zip_safe=False,
     include_package_data=True,
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     platforms="Linux, Mac OS X, Windows",
     keywords=["Jupyter", "JupyterLab", "JupyterLab3"],
     classifiers=[
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",

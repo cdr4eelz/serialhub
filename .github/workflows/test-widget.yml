@@ -1,0 +1,56 @@
+name: Tests and Coverage
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - "*"
+### Graciously based upon jupyterlab/pytest-check-links
+jobs:
+  linux:
+    name: ${{ matrix.PLATFORM }} py${{ matrix.PYTHON_VERSION }}
+    runs-on: ${{ matrix.PLATFORM }}
+    strategy:
+      fail-fast: false
+      matrix:
+        PLATFORM: ['ubuntu-latest', 'macos-latest',  'windows-latest']
+        PYTHON_VERSION: ['3.7', '3.10']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup python ${{ matrix.PYTHON_VERSION }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.PYTHON_VERSION }}
+          architecture: 'x64'
+      - name: Install python dependencies
+        run: |
+          pip install --upgrade --user setuptools pip wheel
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "::set-output name=dir::$(pip cache dir)"
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ matrix.PYTHON_VERSION }}-${{ hashFiles('requirements.txt', 'setup.cfg') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.PYTHON_VERSION }}-
+            ${{ runner.os }}-pip-
+      - name: Install package and dependencies
+        run: |
+          pip install --upgrade -vv .[cache] pytest-cov codecov pytest-check-links
+      - name: Show python environment
+        run: |
+          which python
+          python --version
+          python -m pip list
+      - name: Run python tests
+        # disable automatic inclusion for coverage
+        run: |
+          pytest -vv --cov=serialhub --cov-report term-missing serialhub/tests/ || pytest -vv --cov=serialhub --cov-report term-missing --lf serialhub/tests/
+      - name: Upload coverage
+        run: |
+          codecov

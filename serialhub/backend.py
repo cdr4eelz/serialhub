@@ -91,11 +91,10 @@ class SerialHubWidget(ipywidgets.DOMWidget):
         help='[pkts,bytes] sent by backend to frontend'
     ).tag(sync=True)
 
-    _cb_recv = None
-
     def __init__(self, *args, **kwargs):
         #TODO: Allow request & serial options to be passed at construction
         ipywidgets.DOMWidget.__init__(self, *args, **kwargs)
+        self._cb_recv = None
         self.on_msg(self.msg_custom)
 
     def on_recv(self, cb_recv):
@@ -168,13 +167,10 @@ class SerialHubWidget(ipywidgets.DOMWidget):
 class SerialIO(io.RawIOBase):
     """Serial IO proxied to frontend browser serial"""
 
-    widget: SerialHubWidget
-    bufseq: Deque[io.BytesIO]
-
     def __init__(self, widget: SerialHubWidget): #, *args, **kwargs):
         io.RawIOBase.__init__(self)
-        self.widget = widget
-        self.bufseq = deque()
+        self.widget: SerialHubWidget = widget
+        self.bufseq: Deque[io.BytesIO] = deque()
         def wrap_recv(buf):
             self.cb_recv(buf) #Capture self in a callback wrapper
         widget.on_recv(wrap_recv)
