@@ -41,7 +41,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install package and dependencies
         run: |
-          pip install --upgrade -vv .[cache] pytest-cov codecov pytest-check-links
+          pip install --upgrade -vv .[cache] pytest-cov nbval codecov pytest-check-links
       - name: Show python environment
         run: |
           which python
