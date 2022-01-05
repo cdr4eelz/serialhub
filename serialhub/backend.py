@@ -70,23 +70,23 @@ class SerialHubWidget(ipywidgets.DOMWidget):
         traitlets.Int(), traitlets.Int(),
         default_value=(0, 0),
         read_only=True,
-        help='[pkts,bytes] received by frontend JS reader'
+        help='[bytes,packets] received by frontend JS reader'
     ).tag(sync=True)
     pkt_send_front = traitlets.Tuple(
         traitlets.Int(), traitlets.Int(),
         default_value=(0, 0),
         read_only=True,
-        help='[pkts,bytes] sent to serial port by frontend'
+        help='[bytes,packets] sent to serial port by frontend'
     ).tag(sync=True)
     pkt_recv_back = traitlets.Tuple(
         traitlets.Int(), traitlets.Int(),
         default_value=(0, 0),
-        help='[pkts,bytes] received from trontend by backend callback'
+        help='[bytes,packets] received from trontend by backend callback'
     ).tag(sync=True)
     pkt_send_back = traitlets.Tuple(
         traitlets.Int(), traitlets.Int(),
         default_value=(0, 0),
-        help='[pkts,bytes] sent by backend to frontend'
+        help='[bytes,packets] sent by backend to frontend'
     ).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
