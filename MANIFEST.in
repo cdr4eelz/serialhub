@@ -9,6 +9,7 @@ include .coverage.rc
 include appveyor.yml
 include codecov.yml
 include readthedocs.yml
+include pylintrc
 
 include tsconfig.json
 include package.json

@@ -2,12 +2,12 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "npm",
-			"script": "build",
+			"type": "shell",
+			"command": "jlpm run build",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "npm: build",
-			"detail": "npm run build:lib && npm run build:nbextension"
+			"label": "jlpm: build",
+			"detail": "jlpm run build"
 		}
 	]
 }

@@ -31,6 +31,9 @@
     "python.defaultInterpreterPath": "/opt/conda/envs/jupyterlab/bin/python",
     "python.pythonPath": "/opt/conda/envs/jupyterlab/bin/python",
     "files.exclude": {
+        "**/__pycache__": true,
+        "**/.mypy_cache": true,
+        "**/.pytest_cache": true,
         "**/*~": true
     }
 }

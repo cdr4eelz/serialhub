@@ -5,7 +5,7 @@
 [![pypi](https://img.shields.io/pypi/v/serialhub.svg)](https://pypi.python.org/pypi/serialhub)
 [![license](https://img.shields.io/github/license/cdr4eelz/serialhub.svg)](https://github.com/cdr4eelz/serialhub/blob/master/LICENSE.txt)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cdr4eelz/serialhub/master?labpath=examples%2Fintroduction.ipynb)  <<==-- Try it NOW, _conveniently pre-installed_ in a JupyterLab on https://mybinder.org/  _(Serial communication requires a browser with Web Serial API such as Chrome/Edge, see below)_
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cdr4eelz/serialhub/master?labpath=examples%2Fintroduction.ipynb)  <<==-- Try it NOW, _conveniently pre-installed_ in a JupyterLab on mybinder.org _(Serial communication requires a browser with Web Serial API such as Chrome/Edge, see below)_
 
 This is a custom IPython/Jupyter widget for use in JupyterLab.  It allows _serial communication_ from python code running in a notebook, even when hosted in the cloud (via JupyterHub, for example).  An _end user_ serial device is accessed indirectly via a web browser's implementation of the [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) (MUST be present to be useful).  As of 2021, the [Web Serial Spec](https://wicg.github.io/serial/) is _present ONLY in recent Google Chrome & Microsoft Edge_ browsers.  Consider checking [this browser support matrix](https://developer.mozilla.org/en-US/docs/Web/API/SerialPort#browser_compatibility) in case of future implementation in other browsers.
 
