@@ -8,7 +8,9 @@ Python backend module for SerialHub Widget
 import json
 from pathlib import Path
 
-from .backend import SerialHubWidget, SerialIO
+#Import these so they get re-exported to serialhub package
+from .backend import SerialHubWidget
+from .serialio import SerialIO
 from .nbextension import _jupyter_nbextension_paths
 
 from ._version import __version__
