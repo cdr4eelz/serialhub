@@ -18,13 +18,13 @@ jobs:
       uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
 
     - name: Install dependencies
-      run: python -m pip install -U jupyterlab~=3.1 check-manifest
+      run: python -m pip install -U jupyterlab~=3.1 check-manifest pylint
 
     - name: Build the extension
       run: |
         set -eux
         jlpm
-        jlpm run lint:all #eslint:check
+        jlpm run eslint:check
         jlpm run build:all
         python -m pip install .
 
@@ -35,8 +35,9 @@ jobs:
 
         check-manifest -v
 
-        pip install pytest nbval pytest-cov
-        jlpm run test
+        pip install pytest nbval pytest-cov pylint
+        pylint serialhub/
+        pytest -v
 
         pip install build
         python -m build --sdist
