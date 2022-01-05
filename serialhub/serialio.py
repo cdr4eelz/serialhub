@@ -6,30 +6,130 @@
 
 """Wrapper class to make serialhub.SerialHubPort access similar to regular IO."""
 
-# , BinaryIO, IO
-from typing import Deque, ByteString, Optional, NoReturn
-import io  # , binascii
+import io
 from collections import deque
+from typing import ByteString, Optional, NoReturn, Callable, TextIO, Deque
+from abc import abstractmethod  # ABCMeta
 
-from .backend import SerialHubWidget
 
-#BinaryIO(IO[bytes])
+class SerialIOProvider():
+    """Base class defining an "interface" providing serial data to SerialIO."""
+
+    @abstractmethod
+    def on_recv(self, cb_recv: Callable[[ByteString], None]) -> None:
+        """Set a single callback for received buffers of serial data"""
+
+    @abstractmethod
+    def do_recv(self, buf: ByteString) -> None:
+        """A buffer arrived, handle it (by calling the callback set by on_recv)."""
+
+    @abstractmethod
+    def write_bytes(self, buf: ByteString) -> None:
+        """Send data to serial port."""
+
+    @abstractmethod
+    def is_closed(self) -> bool:
+        """Is the provider closed?"""
+
+
+#typing.BinaryIO(typing.IO[bytes])
 class SerialIO(io.RawIOBase):
-    """Serial IO proxied to frontend browser serial"""
+    """Serial IO to be proxied to frontend browser Web Serial API"""
 
-    def __init__(self, widget: SerialHubWidget):  # , *args, **kwargs):
-        io.RawIOBase.__init__(self)
-        self.widget: SerialHubWidget = widget
-        self.bufseq: Deque[io.BytesIO] = deque()
+    def __init__(self, provider: SerialIOProvider, dbglog: TextIO = None):
+        super().__init__()  # Perhaps not necessary for RawIOBase?
+        self._siop: SerialIOProvider = provider
+        self._qread: Deque[io.BytesIO] = deque()
+        self._dbglog: Optional[TextIO] = dbglog
+        self._dbg(f'Constructing {ascii(self)}\n')
 
-        def wrap_recv(buf):
-            self.cb_recv(buf)  # Capture self in a callback wrapper
-        widget.on_recv(wrap_recv)
+        # Wrap callback method in a callback function...
+        def wrap_recv_cb(buf: ByteString) -> None:
+            # ...in order to capture "self" in a Closure and use for method call
+            self.cb_recv(buf)
+        provider.on_recv(wrap_recv_cb)
 
-    def cb_recv(self, buf: ByteString) -> None:
+    def _dbg(self, msg: str) -> None:
+        """Log msg string to _dbglog and immediately flush, or ignore if it is None"""
+        if self._dbglog is not None:  # Caller should chck, to short-circuit a complicated msg
+            self._dbglog.write(msg)
+            self._dbglog.flush()
+
+    def cb_recv(self, data: ByteString) -> None:
         """Append received data to our deque as BytesIO."""
-        bio = io.BytesIO(buf)
-        self.bufseq.append(bio)
+        bio_data = io.BytesIO(data)
+        self._qread.append(bio_data)
+        if self._dbglog is not None:  # Avoid creating message unless needed
+            self._dbg(f'  +RECV: {len(data)} {ascii(data)} 0x{id(bio_data):X}\n')
+
+    def closed(self) -> bool:
+        """Rely on the widget/provider to report closed status."""
+        return self._siop.is_closed()
+
+    def write(self, data: bytes) -> Optional[int]:
+        """Sends data to the associated SerialIOProvider."""
+        if self.closed():
+            raise ValueError("Stream closed")
+        if len(data) <= 0:
+            return None
+        self._siop.write_bytes(data)
+        return len(data)  # Assume all data gets written
+
+    def readinto(self, ba_into: bytearray) -> Optional[int]:
+        if self.closed():
+            raise ValueError("Stream closed")
+        if len(ba_into) <= 0:
+            return None
+        # Examine deque from left, looking for first readable stream
+        while len(self._qread) > 0:  # While deque MIGHT have more data avail
+            n_written: Optional[int] = self._qread[0].readinto(ba_into)
+            if n_written is not None and n_written > 0:  # If something written...
+                if self._dbglog is not None:  # Avoid details of message unless needed
+                    # View of the written portion
+                    ba_part: bytearray = ba_into[:n_written]
+                    # Take note of current offset
+                    ba_off: int = self._qread[0].tell()
+                    self._dbg(
+                        f'  =RDIN: {n_written} {len(ba_into)} {ba_off} {repr(ba_part)}\n')
+                return n_written  # Return first successful chunk, even more might be available
+            # Unsuccessful nested readint(), discard the depleated BytesIO stream
+            disc_bio: io.BytesIO = self._qread.popleft()  # Discard zeroth/left-most element
+            if self._dbglog is not None:  # Avoid details of message unless needed
+                disc_byt: bytes = disc_bio.getvalue()
+                disc_off: int = disc_bio.tell()
+                self._dbg(
+                    f'  -DISC: {len(disc_byt)} {disc_off} {repr(disc_byt)} 0x{id(disc_bio):X}\n')
+            disc_bio.close()  # Hopefully this releases referenced bytes as if detach()
+            del disc_bio  # Promote opportunity for GC to free buffers ASAP???
+        # Empty, return 0/None as though non-blocking (rather than zero length)???
+        return 0
+
+    def reset_input_buffer(self) -> None:
+        """Clear all data waiting to be read (Data that has arrived at backend)."""
+        old_deque = self._qread
+        self._qread = deque()  # Replace deque with a blank one
+        self._dbg('reset_input_buffer() called\n')
+        for rio in old_deque:
+            rio.close()
+        old_deque.clear()
+
+    @property
+    def in_waiting(self) -> int:
+        """Number of bytes waiting in backend read buffers."""
+        t_bytes: int = 0
+        for rio in self._qread:
+            # Total buffer minus seek position
+            t_bytes += len(rio.getbuffer()) - rio.tell()
+        return t_bytes
+
+    def reset_output_buffer(self) -> None:
+        """Clear data waiting to be written (Does nothing)."""
+        self._dbg('reset_output_buffer() called\n')
+
+    @property
+    def out_waiting(self) -> int:
+        """Number of bytes outgoing buffers (Always zero)"""
+        return 0
 
     def readable(self) -> bool:
         return True
@@ -43,27 +143,6 @@ class SerialIO(io.RawIOBase):
     def seekable(self) -> bool:
         return False
 
-    def closed(self) -> bool:
-        """Currently True only if widget reports unsupported"""
-        return not self.widget.is_supported or self.widget.status != 'Connected'
-
-    def write(self, data: bytes) -> Optional[int]:
-        if self.closed():
-            raise ValueError("Stream closed")
-        if len(data) <= 0:
-            return None
-        self.widget.write_bytes(data)
-        return len(data)
-
-    def readinto(self, b: bytearray) -> Optional[int]:
-        if self.closed():
-            raise ValueError("Stream closed")
-        if len(b) <= 0:
-            return None
-        if len(self.bufseq) <= 0:
-            return 0
-        return self.bufseq[0].readinto(b)
-
     def fileno(self) -> NoReturn:
         raise OSError("No fileno")
 
@@ -75,3 +154,42 @@ class SerialIO(io.RawIOBase):
 
     def truncate(self, size: Optional[int] = None) -> NoReturn:
         raise OSError("Not seekable")
+
+
+class SerialIOLoopbackProvider(SerialIOProvider):
+    """Dummy SerialIOProvider which simply logs output."""
+
+    def __init__(self, dbglog: TextIO = None):
+        #Don't need to call super().__init__ since SerialIOProvider is fully abstract
+        self._cb_recv: Optional[Callable[[ByteString], None]] = None
+        self._dbglog: TextIO = dbglog
+        self._closed = False
+        if self._dbglog:
+            self._dbglog.write(f'Constructed {ascii(self)}\n')
+
+    def on_recv(self, cb_recv: Optional[Callable[[ByteString], None]]) -> None:
+        """Set callback for received buffers of serial data."""
+        self._cb_recv = cb_recv
+        if self._dbglog:
+            self._dbglog.write(f'Provider-ONRECV: {ascii(cb_recv)}\n')
+
+    def do_recv(self, buf: ByteString) -> None:
+        """A buffer arrived, handle it."""
+        if self._cb_recv:
+            self._cb_recv(buf)
+        elif self._dbglog:
+            self._dbglog.write(f'Provider-LOST: {len(buf)} {ascii(buf)}\n')
+
+    def write_bytes(self, buf: ByteString) -> None:
+        """Would send data to serial port."""
+        if self._dbglog:
+            self._dbglog.write(f'Provider-WRITELOOP: {len(buf)} {ascii(buf)}\n')
+        self.do_recv(buf)  # Loopback to our own recv method
+
+    def is_closed(self) -> bool:
+        """Test code can manipulate this value with set_closed()."""
+        return self._closed
+
+    def set_closed(self, val: bool) -> None:
+        """Manipulate the "closed" state of the dummy provider."""
+        self._closed = val

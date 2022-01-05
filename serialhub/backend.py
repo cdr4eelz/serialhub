@@ -7,16 +7,18 @@
 """SerialHub backend widget & support classes"""
 
 from __future__ import absolute_import
-#from __future__ import print_function
-from typing import Sequence, Mapping, Any, ByteString, Optional  # , BinaryIO, IO
 
-import ipywidgets #from ipywidgets import DOMWidget, register
-import traitlets
-#from traitlets.traitlets import Integer #from traitlets import Unicode, Int, Bool, Complex, Enum
+from typing import Sequence, Mapping, Any, ByteString, Optional, Callable  # , BinaryIO, IO
+
+import ipywidgets #eg: DOMWidget, register
+import traitlets #eg: Integer, Unicode, Bool, Complex, Enum
+
 from ._frontend import module_name, module_version
+from .serialio import SerialIOProvider
+
 
 @ipywidgets.register
-class SerialHubWidget(ipywidgets.DOMWidget):
+class SerialHubWidget(ipywidgets.DOMWidget, SerialIOProvider):
     """\
     SerialHubWidget class inherits ipywidgets.DOMWidget
         Model: SerialHubModel, View: SerialHubView
@@ -90,12 +92,12 @@ class SerialHubWidget(ipywidgets.DOMWidget):
     ).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
-        #TODO: Allow request & serial options to be passed at construction
+        #FUTURE: Allow request & serial options to be passed at construction
         ipywidgets.DOMWidget.__init__(self, *args, **kwargs)
-        self._cb_recv = None
+        self._cb_recv: Callable[[ByteString], None] = None
         self.on_msg(self.msg_custom)
 
-    def on_recv(self, cb_recv):
+    def on_recv(self, cb_recv: Callable[[ByteString], None]):
         """Set callback for received buffers of serial data"""
         self._cb_recv = cb_recv
 
@@ -140,14 +142,14 @@ class SerialHubWidget(ipywidgets.DOMWidget):
         self.send(content, buffers)
 
     def write_bytes(self,
-                data: ByteString
+                buf: ByteString
     ) -> None:
         """Sends a buffer for the client to write() as serial data.
-          "data" is a single bytestring to be output by client to the serialport
+          "buf" is a single bytestring to be output by client to the serialport
         """
-        self.send_custom({'type': 'SEND'}, [data])
+        self.send_custom({'type': 'SEND'}, [buf])
         (o_byt, o_pkt) = self.pkt_send_back
-        self.pkt_send_back = (o_byt + len(data), o_pkt + 1)
+        self.pkt_send_back = (o_byt + len(buf), o_pkt + 1)
 
     def write_str(self,
                 data: str,
@@ -159,3 +161,7 @@ class SerialHubWidget(ipywidgets.DOMWidget):
             Optional "errs" for desired encoding error handling (default 'ignore')
         """
         self.write_bytes(data.encode(encoding=enc, errors=errs))
+
+    def is_closed(self) -> bool:
+        """Currently presumes open if serial is supported."""
+        return not self.is_supported

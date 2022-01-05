@@ -31,6 +31,7 @@ def test_backend_creation_blank():
     assert shw._view_name == 'SerialHubView'
     assert shw._view_module == 'serialhub'
     assert isinstance(shw._view_module_version, str)
+    assert shw.model_id
 
 def test_backend_labextension():
     """Check that we seem to be a JupyterLab extension."""
