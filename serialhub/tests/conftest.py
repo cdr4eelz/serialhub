@@ -4,6 +4,8 @@
 # Copyright (c) cdr4eelz.
 # Distributed under the terms of the Modified BSD License.
 
+"""Jupyter related pytest helpers."""
+
 import pytest
 
 from ipykernel.comm import Comm
@@ -21,7 +23,7 @@ class MockComm(Comm):
         self.log_open = []
         self.log_send = []
         self.log_close = []
-        super(MockComm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def open(self, *args, **kwargs):
         self.log_open.append((args, kwargs))
@@ -38,6 +40,8 @@ undefined = object()
 
 @pytest.fixture
 def mock_comm():
+    """A pytest fixture for capturing JupyterLab comm messages"""
+    #pylint: disable=protected-access
     _widget_attrs['_comm_default'] = getattr(Widget, '_comm_default', undefined)
     Widget._comm_default = lambda self: MockComm()
     _widget_attrs['_ipython_display_'] = Widget._ipython_display_

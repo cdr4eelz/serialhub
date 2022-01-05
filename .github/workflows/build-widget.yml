@@ -24,7 +24,7 @@ jobs:
       run: |
         set -eux
         jlpm
-        jlpm run eslint:check
+        jlpm run lint:all #eslint:check
         jlpm run build:all
         python -m pip install .
 

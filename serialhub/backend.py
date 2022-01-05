@@ -4,9 +4,7 @@
 # Copyright (c) cdr4eelz.
 # Distributed under the terms of the Modified BSD License.
 
-"""\
-SerialHub backend widget & support classes
-"""
+"""SerialHub backend widget & support classes"""
 
 from __future__ import absolute_import
 #from __future__ import print_function
@@ -19,7 +17,8 @@ from ._frontend import module_name, module_version
 
 @ipywidgets.register
 class SerialHubWidget(ipywidgets.DOMWidget):
-    """SerialHubWidget class inherits ipywidgets.DOMWidget
+    """\
+    SerialHubWidget class inherits ipywidgets.DOMWidget
         Model: SerialHubModel, View: SerialHubView
     """
     _model_name = traitlets.Unicode('SerialHubModel').tag(sync=True)
@@ -35,7 +34,8 @@ class SerialHubWidget(ipywidgets.DOMWidget):
         read_only=True,
         help='is_supported is set by frontend to True if the browser supports Web Serial API'
     ).tag(sync=True)
-    status = traitlets.Unicode( #TODO: Consider an Enum or UseEnum approach???
+    #FUTURE: Consider an Enum or UseEnum approach for status traitlet???
+    status = traitlets.Unicode(
         default_value='Checking...',
         help='status of the widget frontend regarding serial port'
     ).tag(sync=True)
@@ -65,7 +65,7 @@ class SerialHubWidget(ipywidgets.DOMWidget):
             'stopBits': 1
         }, help='serial_options to apply when opening serial port'
     ).tag(sync=True)
-    #TODO: Optionally turn off 'sync' attribute for statistics (for performance)
+    #FUTURE: Optionally turn off 'sync' attribute for statistics (for performance)
     pkt_recv_front = traitlets.Tuple(
         traitlets.Int(), traitlets.Int(),
         default_value=(0, 0),

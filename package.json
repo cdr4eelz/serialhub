@@ -50,6 +50,8 @@
     "clean:all": "jlpm run clean:lib && jlpm run clean:labextension && jlpm run clean:nbextension",
     "eslint": "eslint . --ext .ts,.tsx --fix",
     "eslint:check": "eslint . --ext .ts,.tsx",
+    "pylint": "pylint -v serialhub/",
+    "lint:all": "jlpm run eslint:check && jlpm run pylint",
     "install:extension": "jlpm run build",
     "watch": "run-p watch:src watch:labextension",
     "watch:src": "tsc -w",
