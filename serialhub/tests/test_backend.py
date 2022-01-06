@@ -12,9 +12,10 @@
 #from ..backend import SerialHubWidget
 #from .. import XYZ
 
+#pylint: disable=protected-access
+
 def test_backend_creation_blank():
     """Ensure traitlets exist and have reasonable defaults."""
-    #pylint: disable=protected-access
     from .. import SerialHubWidget  # pylint: disable=import-outside-toplevel
     shw = SerialHubWidget()
     assert not shw.is_supported  # Ensure either None or False

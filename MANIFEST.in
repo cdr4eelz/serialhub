@@ -30,6 +30,8 @@ prune examples/.ipynb_checkpoints
 # Tests
 graft tests
 prune tests/build
+graft tests_ipynb
+prune tests_ipynb/.ipynb_checkpoints
 
 # Javascript files
 #include serialhub/nbextension/*.py

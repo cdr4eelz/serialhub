@@ -24,12 +24,12 @@ class SerialIOProvider():
         """A buffer arrived, handle it (by calling the callback set by on_recv)."""
 
     @abstractmethod
-    def write_bytes(self, buf: ByteString) -> None:
-        """Send data to serial port."""
-
-    @abstractmethod
     def is_closed(self) -> bool:
         """Is the provider closed?"""
+
+    @abstractmethod
+    def write_bytes(self, buf: ByteString) -> None:
+        """Send data to serial port."""
 
 
 #typing.BinaryIO(typing.IO[bytes])
@@ -157,7 +157,7 @@ class SerialIO(io.RawIOBase):
 
 
 class SerialIOLoopbackProvider(SerialIOProvider):
-    """Dummy SerialIOProvider which simply logs output."""
+    """Dummy SerialIOProvider which logs output and loops back to input callback."""
 
     def __init__(self, dbglog: TextIO = None):
         #Don't need to call super().__init__ since SerialIOProvider is fully abstract

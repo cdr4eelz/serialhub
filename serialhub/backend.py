@@ -94,21 +94,8 @@ class SerialHubWidget(ipywidgets.DOMWidget, SerialIOProvider):
     def __init__(self, *args, **kwargs):
         #FUTURE: Allow request & serial options to be passed at construction
         ipywidgets.DOMWidget.__init__(self, *args, **kwargs)
-        self._cb_recv: Callable[[ByteString], None] = None
+        self._cb_recv: Optional[Callable[[ByteString], None]] = None
         self.on_msg(self.msg_custom)
-
-    def on_recv(self, cb_recv: Callable[[ByteString], None]):
-        """Set callback for received buffers of serial data"""
-        self._cb_recv = cb_recv
-
-    def do_recv(self, buf: ByteString):
-        """A buffer arrived, handle it."""
-        if self._cb_recv:
-            self._cb_recv(buf)
-        else:
-            # buf.hex() ; str(binascii.b2a_hex(buf)) ; buf.decode('ascii','ignore')
-            decoded: str = str(buf, encoding='ascii', errors='ignore')
-            self.value += decoded.replace("\n", "\\n").replace("\r", "\\r")
 
     def msg_custom(self,
                 widget: ipywidgets.DOMWidget,  #pylint: disable=unused-argument
@@ -141,9 +128,23 @@ class SerialHubWidget(ipywidgets.DOMWidget, SerialIOProvider):
         """
         self.send(content, buffers)
 
+    def on_recv(self, cb_recv: Optional[Callable[[ByteString], None]]):
+        """Set callback for received buffers of serial data"""
+        self._cb_recv = cb_recv
+
+    def do_recv(self, buf: ByteString):
+        """A buffer arrived, handle it."""
+        if self._cb_recv:
+            self._cb_recv(buf)
+        else:
+            # buf.hex() ; str(binascii.b2a_hex(buf)) ; buf.decode('ascii','ignore')
+            # decoded: str = str(buf, encoding='ascii', errors='ignore')
+            # self.value += decoded.replace("\n", "\\n").replace("\r", "\\r")
+            self.value += ascii(buf)
+
     def write_bytes(self,
-                buf: ByteString
-    ) -> None:
+                    buf: ByteString
+                    ) -> None:
         """Sends a buffer for the client to write() as serial data.
           "buf" is a single bytestring to be output by client to the serialport
         """
@@ -151,17 +152,17 @@ class SerialHubWidget(ipywidgets.DOMWidget, SerialIOProvider):
         (o_byt, o_pkt) = self.pkt_send_back
         self.pkt_send_back = (o_byt + len(buf), o_pkt + 1)
 
+    def is_closed(self) -> bool:
+        """Currently presumes open if serial is supported."""
+        return not self.is_supported
+
     def write_str(self,
-                data: str,
-                enc: Optional[str] = 'ascii',
-                errs: Optional[str] = 'ignore'
-    ) -> None:
+                  data: str,
+                  enc: Optional[str] = 'ascii',
+                  errs: Optional[str] = 'ignore'
+                  ) -> None:
         """Sends a single buffer for the client to write() as serial data.
             Optional "enc" for desired encoding (default 'ascii')
             Optional "errs" for desired encoding error handling (default 'ignore')
         """
         self.write_bytes(data.encode(encoding=enc, errors=errs))
-
-    def is_closed(self) -> bool:
-        """Currently presumes open if serial is supported."""
-        return not self.is_supported

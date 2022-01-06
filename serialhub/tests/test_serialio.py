@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# Copyright (c) cdr4eelz.
+# Distributed under the terms of the Modified BSD License.
+
 """\
 Tests related to SerialIO basics and stream reading.
     NOTE: Some tests examine or depend upon specific implementation internals,
@@ -17,9 +23,10 @@ _WANT_NONE_FOR_EOS: bool = False
 
 # Fixtures trigger outer name reuse warning so we suppress it in the module:
 #pylint: disable=redefined-outer-name
+#pylint: disable=protected-access
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture  # (scope="module")
 def sio_provider() -> SerialIOProvider:
     """Create a dummy SerialIOProvider to share in "class" scope."""
     return SerialIOLoopbackProvider(sys.stderr)
@@ -48,7 +55,6 @@ def test_attributes_iobase(sio: io.IOBase) -> None:
 
 def test_protected(sio: SerialIO) -> None:
     """Check some protected properties that we use during testing."""
-    #pylint: disable=protected-access
     assert sio._siop is not None
     assert isinstance(sio._siop, SerialIOProvider)
     assert sio._siop.is_closed() is False
@@ -62,7 +68,6 @@ def test_protected(sio: SerialIO) -> None:
 
 def test_cb_recv(sio: SerialIO) -> None:
     """Indirectly SerialIO.cb_recv() is called by SerialIOProvider.do_recv()."""
-    #pylint: disable=protected-access
     assert len(sio._qread) == 0  # The deque of BytesIO starts empty
     assert sio.in_waiting == 0  # Depends upon working "in_waiting" property
     # Push a buffer using SerialIOProvider method
@@ -76,7 +81,6 @@ def test_cb_recv(sio: SerialIO) -> None:
 
 def test_read_varsz(sio: SerialIO) -> None:
     """Sequential buffers read in various sizes"""
-    #pylint: disable=protected-access
     assert sio.in_waiting == 0
     sio._siop.do_recv(b'BUF1\n')
     sio._siop.do_recv(b'BUF2\n')
@@ -101,7 +105,6 @@ def test_read_varsz(sio: SerialIO) -> None:
 
 def test_readneg_empties(sio: SerialIO) -> None:
     """Skip empty bufs and read almost all"""
-    #pylint: disable=protected-access
     sio._siop.do_recv(b'BUF5\n')
     assert sio.in_waiting == 5
     sio._siop.do_recv(b'')  # We want it to silently skip empty bufs
@@ -117,7 +120,6 @@ def test_readneg_empties(sio: SerialIO) -> None:
 
 def test_readline_unterm(sio: SerialIO) -> None:
     """Terminated and non-terminated readline"""
-    #pylint: disable=protected-access
     sio._siop.do_recv(b'Buffer7 is a line.\nBuffer8')
     sio._siop.do_recv(b' ends')
     sio._siop.do_recv(b' without NL')
@@ -130,7 +132,6 @@ def test_readline_unterm(sio: SerialIO) -> None:
 
 def test_readinto(sio: SerialIO) -> None:
     """Re-used bytearray for readinto amid empty buffers"""
-    #pylint: disable=protected-access
     sio._siop.do_recv(b'')
     sio._siop.do_recv(b'DATA VAL')
     sio._siop.do_recv(b'')
@@ -151,7 +152,6 @@ def test_readinto(sio: SerialIO) -> None:
 
 def test_readall_multiline(sio: SerialIO) -> None:
     """Multi-line readall"""
-    #pylint: disable=protected-access
     sio._siop.do_recv(b'...several lines\n')
     sio._siop.do_recv(b'until')
     sio._siop.do_recv(b'\nend!')
@@ -166,7 +166,6 @@ def test_readall_multiline(sio: SerialIO) -> None:
 
 def test_reset_buffers(sio: SerialIO) -> None:
     """Clear input buffers then resume"""
-    #pylint: disable=protected-access
     assert sio.out_waiting == 0
     sio._siop.do_recv(b'DISCARDED1')
     sio._siop.do_recv(b'Also Discarded')
@@ -198,7 +197,6 @@ def test_write_simple(sio: SerialIO) -> None:
 
 def test_write_amid_read(sio: SerialIO) -> None:
     """Mix reading from fake buffers and writing to loop-back."""
-    #pylint: disable=protected-access
     sio._siop.do_recv(b'\x03\x02\x01\x00')  # Add a buffer directly
     # Write to stream and add buffer via loopback
     assert sio.write(b'Howdy') == 5
@@ -249,7 +247,6 @@ def test_closed_behavior() -> None:
 
 def test_callback_none() -> None:
     """Exercise the case of lost data due to no callback."""
-    #pylint: disable=protected-access
     siop = SerialIOLoopbackProvider(sys.stderr)
     assert siop._cb_recv is None
     siop.do_recv(b'Some lost data')
