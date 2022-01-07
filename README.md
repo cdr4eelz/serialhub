@@ -4,6 +4,7 @@
 [![Build Widget](https://github.com/cdr4eelz/serialhub/actions/workflows/build-widget.yml/badge.svg)](https://github.com/cdr4eelz/serialhub/actions/workflows/build-widget.yml)
 [![pypi](https://img.shields.io/pypi/v/serialhub.svg)](https://pypi.python.org/pypi/serialhub)
 [![license](https://img.shields.io/github/license/cdr4eelz/serialhub.svg)](https://github.com/cdr4eelz/serialhub/blob/master/LICENSE.txt)
+[![codecov of python](https://codecov.io/gh/cdr4eelz/serialhub/branch/master/graph/badge.svg)](https://codecov.io/gh/cdr4eelz/serialhub)
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cdr4eelz/serialhub/master?labpath=examples%2Fintroduction.ipynb)  <<==-- Try it NOW, _conveniently pre-installed_ in a JupyterLab on mybinder.org _(Serial communication requires a browser with Web Serial API such as Chrome/Edge, see below)_
 
