@@ -3,11 +3,19 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"command": "jlpm run build",
+			"command": "jlpm",
+			"args": ["run", "lint"],
 			"group": "build",
 			"problemMatcher": [],
-			"label": "jlpm: build",
-			"detail": "jlpm run build"
+			"label": "jlpm: lint",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"showReuseMessage": true,
+				"clear": false
+			}
 		}
 	]
 }

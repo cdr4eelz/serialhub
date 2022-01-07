@@ -10,7 +10,7 @@ from pathlib import Path
 
 #Import these so they get re-exported to serialhub package
 from .backend import SerialHubWidget
-from .serialio import SerialIO
+from .serialio import SerialIO, SerialIOProvider, SerialIOLoopbackProvider
 from .nbextension import _jupyter_nbextension_paths
 
 from ._version import __version__

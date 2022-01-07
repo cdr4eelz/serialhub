@@ -7,14 +7,14 @@
 """Tests of serialhub widget in a JupyterLab environment."""
 
 #import pytest
-
+from .. import SerialHubWidget
+#from ..serialio import SerialIOLoopbackProvider
 from .conftest import MockComm
-from ..backend import SerialHubWidget
-#from serialhub.serialio import SerialIOLoopbackProvider
 
 #pylint: disable=protected-access
 
 def test_widget(mock_comm: MockComm):
+    """Attempt to exercise the SerialHubWidget."""
     assert mock_comm
     shw = SerialHubWidget()
     assert shw

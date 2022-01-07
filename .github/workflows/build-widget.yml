@@ -35,9 +35,9 @@ jobs:
 
         check-manifest -v
 
-        pip install pytest nbval pytest-cov pylint
+        pip install pytest nbval coverage pytest-cov pylint
         pylint serialhub/
-        pytest -v
+        pytest -vv
 
         pip install build
         python -m build --sdist

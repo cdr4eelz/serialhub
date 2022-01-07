@@ -1,4 +1,6 @@
 [run]
 omit = serialhub/tests/*
+    tests/*
+    serialhub/tests
 source_pkgs = serialhub
 command_line = -m pytest

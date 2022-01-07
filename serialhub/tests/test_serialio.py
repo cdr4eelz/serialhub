@@ -16,7 +16,7 @@ import collections
 import typing
 import pytest
 
-from ..serialio import SerialIO, SerialIOLoopbackProvider, SerialIOProvider
+from .. import SerialIO, SerialIOLoopbackProvider, SerialIOProvider
 
 # Is end-of-stream expected to return None or 0/b''
 _WANT_NONE_FOR_EOS: bool = False
