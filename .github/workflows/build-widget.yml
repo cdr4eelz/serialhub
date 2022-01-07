@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - 'cdr4eelz**''
   pull_request:
     branches: ['*']
 
@@ -23,22 +24,30 @@ jobs:
     - name: Build the extension
       run: |
         set -eux
-        jlpm
+        jlpm install --frozen-lockfile
+        jlpm audit || true
         jlpm run eslint:check
         jlpm run build:all
         python -m pip install .
 
         jupyter server extension list 2>&1 | grep -ie "serialhub.*OK" || true
 
-        jupyter labextension list 2>&1 | grep -ie "serialhub.*OK"
+        jupyter labextension list 2>&1 | grep -ie "serialhub.*OK" -C1
         python -m jupyterlab.browser_check
 
+    - name: Check the extension
+      run: |
+        set -eux
         check-manifest -v
 
-        pip install pytest nbval coverage pytest-cov pylint
+        pip install pytest nbval coverage pytest-cov pylint jupyterlab~=3.0
         pylint serialhub/
         pytest -vv
+        coverage run || true
 
+    - name: Build the extension sdist
+      run: |
+        set -eux
         pip install build
         python -m build --sdist
         cp dist/*.tar.gz myextension.tar.gz
