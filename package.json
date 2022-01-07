@@ -86,7 +86,8 @@
     "source-map-loader": "^0.2.4",
     "style-loader": "^1.0.0",
     "ts-loader": "^9",
-    "css-loader": "^3.2.0"
+    "css-loader": "^5.0.1",
+    "postcss": "^8.2.13"
   },
   "sideEffects": [
     "style/*.css",
