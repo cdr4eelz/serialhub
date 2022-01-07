@@ -138,9 +138,8 @@ class SerialHubWidget(ipywidgets.DOMWidget, SerialIOProvider):
             self._cb_recv(buf)
         else:
             # buf.hex() ; str(binascii.b2a_hex(buf)) ; buf.decode('ascii','ignore')
-            # decoded: str = str(buf, encoding='ascii', errors='ignore')
-            # self.value += decoded.replace("\n", "\\n").replace("\r", "\\r")
-            self.value += ascii(buf)
+            decoded: str = str(buf, encoding='ascii', errors='ignore')
+            self.value += decoded.replace("\n", "\\n").replace("\r", "\\r")
 
     def write_bytes(self,
                     buf: ByteString
