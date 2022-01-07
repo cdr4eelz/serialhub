@@ -32,7 +32,7 @@ def sio_provider() -> SerialIOProvider:
     return SerialIOLoopbackProvider(sys.stderr)
 
 @pytest.fixture
-def sio(sio_provider: SerialIOProvider):
+def sio(sio_provider: SerialIOProvider) -> typing.Generator[SerialIO, None, None]:
     """Create a fresh SerialIO as basis for a test."""
     siop = sio_provider
     yield SerialIO(siop, sys.stderr)

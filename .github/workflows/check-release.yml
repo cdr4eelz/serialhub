@@ -47,7 +47,7 @@ jobs:
             ${{ runner.os }}-linkcheck-
       - name: Upgrade packaging dependencies
         run: |
-          pip install --upgrade pip setuptools wheel jupyter-packaging~=0.10 pytest-cov nbval pytest-check-links --user
+          pip install --upgrade pip setuptools wheel jupyter-packaging~=0.10 jupyterlab~=3.0 pytest-cov nbval pytest-check-links --user
       - name: Install Dependencies
         run: |
           pip install .

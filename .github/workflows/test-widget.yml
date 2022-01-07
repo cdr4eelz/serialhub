@@ -41,7 +41,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Install package and dependencies
         run: |
-          pip install --upgrade -vv .[cache] coverage pytest-cov nbval codecov pytest-check-links
+          pip install --upgrade -vv .[cache] coverage pytest-cov nbval codecov pytest-check-links jupyterlab~=3.0
       - name: Show python environment
         run: |
           which python
