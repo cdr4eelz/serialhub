@@ -164,6 +164,17 @@ def test_readall_multiline(sio: SerialIO) -> None:
         assert sio.readall() == b''
     assert sio.in_waiting == 0
 
+def test_readlines_unimp(sio: SerialIO) -> None:
+    """Multi-line readlines"""
+    assert sio.closed() is False
+    #sio._checkClosed()  # Always closed
+    sio._siop.do_recv(b'LINE1\nLINE2\r\nLINE3')
+    assert sio.readlines
+    sio._checkClosed()  # Raises error if closed
+    with pytest.raises(OSError):
+        lines = sio.readlines()
+        assert 0, lines
+
 def test_reset_buffers(sio: SerialIO) -> None:
     """Clear input buffers then resume"""
     assert sio.out_waiting == 0
@@ -241,9 +252,12 @@ def test_closed_behavior() -> None:
     sio = SerialIO(siop, sys.stderr)
     assert siop.is_closed() is False
     assert sio.closed() is False
+    sio._checkClosed()  # Raises error if closed
     siop.set_closed(True)
     assert siop.is_closed() is True
     assert sio.closed() is True
+    with pytest.raises(ValueError):
+        sio._checkClosed()  # Raises error if closed
 
 def test_callback_none() -> None:
     """Exercise the case of lost data due to no callback."""

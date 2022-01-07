@@ -155,6 +155,15 @@ class SerialIO(io.RawIOBase):
     def truncate(self, size: Optional[int] = None) -> NoReturn:
         raise OSError("Not seekable")
 
+    def _checkClosed(self) -> None:
+        """Override closed check performed by super."""
+        if self.closed():
+            raise ValueError('I/O operation on closed file.')
+
+    def readlines(self, hint: int = -1) -> NoReturn:
+        """readlines is unimplemented."""
+        raise OSError("Unimplemented")
+
 
 class SerialIOLoopbackProvider(SerialIOProvider):
     """Dummy SerialIOProvider which logs output and loops back to input callback."""
