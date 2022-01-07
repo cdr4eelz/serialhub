@@ -66,6 +66,7 @@ export class SerialHubModel extends DOMWidgetModel {
 
 export class SerialHubView extends DOMWidgetView {
   protected _el_status: HTMLButtonElement | null = null;
+  protected _el_prompt: HTMLSpanElement | null = null;
   protected _el_stats: HTMLPreElement | null = null;
   protected _el_value: HTMLPreElement | null = null;
 
@@ -79,6 +80,8 @@ export class SerialHubView extends DOMWidgetView {
     /* Create a couple sub-Elements for our custom widget */
     this._el_status = window.document.createElement('button');
     this._el_status.classList.add('xx-serialhub-status');
+    this._el_prompt = window.document.createElement('span');
+    this._el_prompt.classList.add('xx-serialhub-prompt');
     this._el_stats = window.document.createElement('pre');
     this._el_stats.classList.add('xx-serialhub-stats');
     this._el_value = window.document.createElement('pre');
@@ -89,7 +92,12 @@ export class SerialHubView extends DOMWidgetView {
     this._el_value.onclick = (ev: MouseEvent) => this.click_value(ev);
 
     /* Append each of the sub-components to our main widget Element */
-    this.el.append(this._el_status, this._el_stats, this._el_value);
+    this.el.append(
+      this._el_status,
+      this._el_prompt,
+      this._el_stats,
+      this._el_value
+    );
 
     this.changed_status();
     this.changed_value();
@@ -109,6 +117,9 @@ export class SerialHubView extends DOMWidgetView {
     const supported: boolean = SerialHubPort.isSupported();
     this.model.set('is_supported', supported);
     this.model.set('status', supported ? 'Supported' : 'Unsupported');
+    if (supported) {
+      this._el_prompt.textContent = '<<< Click to connect a port, if supported';
+    }
 
     this.touch();
     return this;
@@ -131,8 +142,8 @@ export class SerialHubView extends DOMWidgetView {
     if (serInfo) {
       title += '\r\nPort-Info:' + JSON.stringify(serInfo);
     }
-    if (this._el_stats) {
-      this._el_stats.title = title;
+    if (this._el_prompt) {
+      this._el_prompt.title = title;
     }
   }
   changed_request_options(): void {

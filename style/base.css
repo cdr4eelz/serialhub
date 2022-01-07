@@ -1,6 +1,10 @@
 .xx-serialhub-widget {
   padding: 1px 1px;
 }
+.xx-serialhub-prompt {
+  font-style: italic;
+  padding-left: 6px;
+}
 .xx-serialhub-status {
   background-color: lightseagreen;
   border: 1px solid lightcoral;
