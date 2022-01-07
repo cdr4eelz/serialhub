@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - 'cdr4eelz**''
+      - 'cdr4eelz**'
   pull_request:
     branches: ['*']
 
