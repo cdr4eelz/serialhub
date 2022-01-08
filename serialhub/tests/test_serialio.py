@@ -143,7 +143,7 @@ def test_readinto(sio: SerialIO) -> None:
     assert sio.readinto(ba1) == 3  # Exhausts input at 3 bytes vs 5 max
     assert ba1 == b'VALA '  # Overlay only first 3 bytes in ba1
     assert sio.in_waiting == 0
-    if _WANT_NONE_FOR_EOS:
+    if _WANT_NONE_FOR_EOS:  # pragma: no cover
         assert sio.readinto(ba1) is None  # None for no bytes avail
     else:
         assert sio.readinto(ba1) == 0  # Zero size (or None)
@@ -158,7 +158,7 @@ def test_readall_multiline(sio: SerialIO) -> None:
     assert sio.in_waiting == 27
     assert sio.readall() == b'...several lines\nuntil\nend!'
     assert sio.in_waiting == 0
-    if _WANT_NONE_FOR_EOS:
+    if _WANT_NONE_FOR_EOS:  # pragma: no cover
         assert sio.readall() is None
     else:
         assert sio.readall() == b''
@@ -172,8 +172,7 @@ def test_readlines_unimp(sio: SerialIO) -> None:
     assert sio.readlines
     sio._checkClosed()  # Raises error if closed
     with pytest.raises(OSError):
-        lines = sio.readlines()
-        assert 0, lines
+        sio.readlines()
 
 def test_reset_buffers(sio: SerialIO) -> None:
     """Clear input buffers then resume"""
@@ -191,7 +190,7 @@ def test_reset_buffers(sio: SerialIO) -> None:
     assert sio.in_waiting == 12  # Ensure fresh buffer is functional
     assert sio.readall() == b'FRESH1FRESH2'  # Read up to EOS (multi-readinto's)
     assert sio.in_waiting == 0  # Already at EOS
-    if _WANT_NONE_FOR_EOS:
+    if _WANT_NONE_FOR_EOS:  # pragma: no cover
         assert sio.read(-1) is None
     else:
         assert sio.read(-1) == b''
