@@ -4,3 +4,6 @@ omit = serialhub/tests/*
     serialhub/tests
 source_pkgs = serialhub
 command_line = -m pytest
+
+[report]
+show_missing = True

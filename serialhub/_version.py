@@ -17,9 +17,10 @@ def _fetch_version():
                     .replace("-beta.", "b")
                     .replace("-rc.", "rc")
                 )
-        except FileNotFoundError:
+        except FileNotFoundError:  # pragma: no cover
             pass
 
-    raise FileNotFoundError(f"Could not find package.json under dir {here!s}")
+    raise FileNotFoundError(
+        f"Could not find package.json under dir {here!s}")  # pragma: no cover
 
 __version__ = _fetch_version()

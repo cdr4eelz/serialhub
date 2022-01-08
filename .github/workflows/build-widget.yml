@@ -35,20 +35,6 @@ jobs:
         jupyter labextension list 2>&1 | grep -ie "serialhub.*OK" -C1
         python -m jupyterlab.browser_check
 
-    - name: Install testing dependencies
-      run: python -m pip install -U check-manifest pylint pytest nbval coverage pytest-cov
-
-    - name: Check the extension python pytest, etc.
-      run: |
-        set -eux
-        check-manifest -v
-
-        pylint serialhub/
-        pytest -vv
-
-        coverage run || true
-        coverage report || true
-
     - name: Build an extension sdist
       run: |
         set -eux
@@ -62,6 +48,25 @@ jobs:
       with:
         name: myextension-sdist
         path: myextension.tar.gz
+
+    - name: Install testing dependencies
+      run: python -m pip install -U check-manifest pylint pytest nbval coverage pytest-cov
+
+    - name: Check the extension python pytest, etc
+      run: |
+        set -eux
+        check-manifest -v
+
+        pylint serialhub/
+        pytest -vv --capture=tee-sys
+
+    - name: Informational coverage runs
+      run: |
+        set -eux
+        coverage run || true
+        coverage report --show-missing || true
+        pytest --cov=serialhub --cov-report=term-missing || true
+
 
   test_isolated:
     needs: build
