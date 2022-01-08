@@ -41,8 +41,6 @@ jobs:
         pip install build
         python -m build --sdist
         cp dist/*.tar.gz myextension.tar.gz
-        pip uninstall -y "serialhub" jupyterlab
-        rm -rf myextension
 
     - uses: actions/upload-artifact@v2
       with:
@@ -66,6 +64,12 @@ jobs:
         coverage run || true
         coverage report --show-missing || true
         pytest --cov=serialhub --cov-report=term-missing || true
+
+    - name: Uninstall extension
+      run: |
+        set -eux
+        pip uninstall -y "serialhub" jupyterlab
+        rm -rf myextension
 
 
   test_isolated:
