@@ -32,7 +32,7 @@ jobs:
 
         jupyter server extension list 2>&1 | grep -ie "serialhub.*OK" || true
 
-        jupyter labextension list 2>&1 | grep -ie "serialhub.*OK" -C1
+        jupyter labextension list 2>&1 | grep -ie "serialhub.*OK"
         python -m jupyterlab.browser_check
 
     - name: Build an extension sdist
@@ -58,18 +58,19 @@ jobs:
         pylint serialhub/
         pytest -vv --capture=tee-sys
 
-    - name: Informational coverage runs
-      run: |
-        set -eux
-        #coverage run || true
-        #coverage report --show-missing || true
-        pytest --cov=serialhub --cov-report=term-missing || true
-
     - name: Uninstall extension
       run: |
         set -eux
         pip uninstall -y "serialhub" jupyterlab
         rm -rf myextension
+
+    - name: Informational coverage runs
+      run: |
+        set -eux
+        pip install -e .
+        #coverage run || true
+        #coverage report --show-missing || true
+        pytest --cov=serialhub --cov-report=term-missing || true
 
 
   test_isolated:
