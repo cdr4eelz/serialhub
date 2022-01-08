@@ -1,9 +1,8 @@
 [run]
-omit = serialhub/tests/*
-    tests/*
-    serialhub/tests
+omit = tests/*
 source_pkgs = serialhub
-command_line = -m pytest
+#command_line = -m pytest
 
 [report]
 show_missing = True
+#omit = serialhub/tests/*

@@ -61,8 +61,8 @@ jobs:
     - name: Informational coverage runs
       run: |
         set -eux
-        coverage run || true
-        coverage report --show-missing || true
+        #coverage run || true
+        #coverage report --show-missing || true
         pytest --cov=serialhub --cov-report=term-missing || true
 
     - name: Uninstall extension
