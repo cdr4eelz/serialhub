@@ -39,9 +39,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-${{ matrix.PYTHON_VERSION }}-
             ${{ runner.os }}-pip-
-      - name: Install package and dependencies
+      - name: Install testing dependencies
         run: |
           pip install --upgrade -vv .[cache] coverage pytest-cov nbval codecov pytest-check-links jupyterlab~=3.1
+      - name: Install extension in development mode
+        run: |
+          pip install -e .
+          jupyter labextension develop . --overwrite
       - name: Show python environment
         run: |
           which python
@@ -50,7 +54,7 @@ jobs:
       - name: Run python tests
         # disable automatic inclusion for coverage
         run: |
-          pytest -vv --cov=serialhub --cov-report=term-missing || pytest -vv --cov=serialhub --cov-report=term-missing --last-failed
+          pytest -vv --cov=serialhub --cov-report=term-missing
           #coverage run -m pytest -vv
           #coverage report
       - name: Upload coverage
