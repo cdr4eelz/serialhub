@@ -129,6 +129,10 @@ def test_readline_unterm(sio: SerialIO) -> None:
     assert sio.in_waiting == 24
     assert sio.readline() == b'Buffer8 ends without NL.'  # Reads to EOS
     assert sio.in_waiting == 0
+    sio._siop.do_recv(b'End NL\n')  # Reads to EOS including NL
+    assert sio.readline() == b'End NL\n'
+    assert sio.in_waiting == 0
+
 
 def test_readinto(sio: SerialIO) -> None:
     """Re-used bytearray for readinto amid empty buffers"""
