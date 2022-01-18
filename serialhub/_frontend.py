@@ -9,4 +9,4 @@ Information about the frontend package of the widgets.
 """
 
 module_name = "serialhub" #pylint: disable=invalid-name
-module_version = "^0.0.37"  # pylint: disable=invalid-name
+module_version = "^0.0.38"  # pylint: disable=invalid-name
