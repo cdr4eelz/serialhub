@@ -118,7 +118,7 @@ export class SerialHubView extends DOMWidgetView {
     this.model.set('is_supported', supported);
     this.model.set('status', supported ? 'Supported' : 'Unsupported');
     if (supported) {
-      this._el_prompt.textContent = '<<< Click to connect a port, if supported';
+      this._el_prompt.textContent = '<<< Click to connect/disconnect a port';
     }
 
     this.touch();
